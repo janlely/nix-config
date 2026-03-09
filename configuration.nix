@@ -295,6 +295,7 @@
   virtualisation.docker.enable = true;
   users.extraGroups.docker.members = [ "janlely" ];
 
+  programs.nix-ld.enable = true;
  
 }
 

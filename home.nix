@@ -12,6 +12,8 @@
     virt-manager          # 图形 virt-manager
     vulkan-tools vulkan-loader mesa-demos   # 如果你玩游戏/测试图形
     neovim htop ripgrep fd bat eza
+    fnm
+    qwen-code
   ];
 
 
@@ -45,6 +47,9 @@
       clearboot = "sudo nix profile wipe-history --profile /nix/var/nix/profiles/system && sudo nix store gc && sudo nixos-rebuild boot --flake ~/nix-config#janlely-nixos";
       # 加你常用的别名
     };
+    initContent = ''
+      eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
+    '';
   };
 
   # 启用 Home Manager 的状态版本（类似 system.stateVersion）
