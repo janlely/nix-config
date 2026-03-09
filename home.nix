@@ -23,6 +23,7 @@
     settings = {
       user.name = "janlely";
       user.email = "janlely@163.com";
+      core.editor = "nvim";
     };
   };
 
