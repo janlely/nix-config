@@ -120,45 +120,20 @@
   system.stateVersion = "25.11"; # Did you read the comment?
 
 
-  # gnome
   services.xserver.enable = true;
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = true;
-  };
-  services.desktopManager.plasma6.enable = true;
-  
-  systemd.user.services.plasma-nm = {
-    enable = false;
+
+  specialisation = {
+    gdm.configuration = {
+    	imports = [ ./gdm.nix ./nvidia.nix ];
+    };
+
+    sddm.configuration = {
+    	imports = [ ./sddm.nix ./nvidia.nix ];
+    };
   };
 
-  # services.displayManager.gdm.enable = true;
-  # services.desktopManager.gnome.enable = true;
-
-  # nvidia
-  services.xserver.videoDrivers = ["nvidia"];
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-    extraPackages = with pkgs; [nvidia-vaapi-driver];
-  };
-
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    open = true;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-  };
- 
+  # fcitx 
   environment.variables = {
-    GBM_BACKEND = "nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    LIBVA_DRIVER_NAME = "nvidia";
-    NVD_BACKEND = "direct";
-    __EGL_VENDOR_LIBRARY_FILENAMES = "/run/current-system/sw/share/glvnd/egl_vendor.d/10_nvidia.json";
-
-
     GTK_IM_MODULE = "fcitx";
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
@@ -179,6 +154,7 @@
     bridge-utils
     docker
     mihomo
+    flameshot
   ];
 
 

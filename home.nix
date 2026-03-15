@@ -14,6 +14,7 @@
     neovim htop ripgrep fd bat eza
     fnm
     qwen-code
+    wl-clipboard
   ];
 
 
