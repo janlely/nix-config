@@ -130,6 +130,10 @@
     sddm.configuration = {
     	imports = [ ./sddm.nix ./nvidia.nix ];
     };
+
+    hyprland.configuration = {
+    	imports = [ ./hyprland.nix ./nvidia.nix ];
+    };
   };
 
   # fcitx 
@@ -140,7 +144,12 @@
   };
 
 
-  boot.kernelParams = ["nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" "kvm-intel"];
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+    "nvidia-drm.fbdev=1"
+    "kvm-intel"
+    "nvidia-NVreg_EnableGpuFirmware=0"
+  ];
 
 
   virtualisation.libvirtd.enable = true;
@@ -246,15 +255,15 @@
     experimental-features = [ "nix-command" "flakes" ];
     trusted-users = [ "root" "@wheel" "janlely" ];  # 或只加 "janlely" 也行
 
-    trusted-substituters = [
-      "https://mirrors.cernet.edu.cn/nix-channels/store"
-      "https://cache.nixos.org"
-    ];
+    #trusted-substituters = [
+    #  "https://mirrors.cernet.edu.cn/nix-channels/store"
+    #  "https://cache.nixos.org"
+    #];
 
-    substituters = [
-      "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
-      "https://cache.nixos.org?priority=100"                         # 官方放最后
-    ];
+    #substituters = [
+    #  "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
+    #  "https://cache.nixos.org?priority=100"                         # 官方放最后
+    #];
   };
 
   nixpkgs.config.allowUnfree = true;
