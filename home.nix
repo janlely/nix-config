@@ -15,6 +15,9 @@
     fnm
     qwen-code
     wl-clipboard
+    fzf
+    pkgs.telegram-desktop
+    pkgs.claude-code
   ];
 
 
@@ -51,6 +54,7 @@
     };
     initContent = ''
       eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
+      source /etc/profiles/per-user/$USER/share/fzf/key-bindings.zsh
     '';
   };
 

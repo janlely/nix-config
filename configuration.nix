@@ -8,6 +8,8 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./sddm.nix
+      ./nvidia.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -122,19 +124,19 @@
 
   services.xserver.enable = true;
 
-  specialisation = {
-    gdm.configuration = {
-    	imports = [ ./gdm.nix ./nvidia.nix ];
-    };
+  #specialisation = {
+  #  gdm.configuration = {
+  #   	imports = [ ./gdm.nix ./nvidia.nix ];
+  #  };
 
-    sddm.configuration = {
-    	imports = [ ./sddm.nix ./nvidia.nix ];
-    };
+  #  sddm.configuration = {
+  #  	imports = [ ./sddm.nix ./nvidia.nix ];
+  #  };
 
-    hyprland.configuration = {
-    	imports = [ ./hyprland.nix ./nvidia.nix ];
-    };
-  };
+  #  hyprland.configuration = {
+  #  	imports = [ ./hyprland.nix ./nvidia.nix ];
+  #  };
+  #};
 
   # fcitx 
   environment.variables = {
@@ -145,10 +147,7 @@
 
 
   boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
     "kvm-intel"
-    "nvidia-NVreg_EnableGpuFirmware=0"
   ];
 
 
