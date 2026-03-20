@@ -8,7 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./sddm.nix
+      ./desktop.nix
       ./nvidia.nix
     ];
 

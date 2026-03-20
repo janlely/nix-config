@@ -4,7 +4,7 @@
 
   inputs = {
     # 使用稳定分支（推荐）或 unstable
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";  # ← 当前最新 LTS
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";  # ← 当前最新 LTS
 
     # 可选：添加 Home Manager（强烈推荐用于用户环境）
     home-manager = {
