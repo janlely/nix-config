@@ -18,6 +18,7 @@
     fzf
     pkgs.telegram-desktop
     pkgs.claude-code
+    uv
   ];
 
 

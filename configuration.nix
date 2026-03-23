@@ -122,7 +122,7 @@
   system.stateVersion = "25.11"; # Did you read the comment?
 
 
-  services.xserver.enable = true;
+  #services.xserver.enable = true;
 
   #specialisation = {
   #  gdm.configuration = {
@@ -254,15 +254,15 @@
     experimental-features = [ "nix-command" "flakes" ];
     trusted-users = [ "root" "@wheel" "janlely" ];  # 或只加 "janlely" 也行
 
-    #trusted-substituters = [
-    #  "https://mirrors.cernet.edu.cn/nix-channels/store"
-    #  "https://cache.nixos.org"
-    #];
+    trusted-substituters = [
+      "https://mirrors.cernet.edu.cn/nix-channels/store"
+      #"https://cache.nixos.org"
+    ];
 
-    #substituters = [
-    #  "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
-    #  "https://cache.nixos.org?priority=100"                         # 官方放最后
-    #];
+    substituters = [
+      "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
+      #"https://cache.nixos.org?priority=100"                         # 官方放最后
+    ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -281,5 +281,7 @@
 
   programs.nix-ld.enable = true;
  
+
+  #boot.kernelPackages = pkgs.linuxPackages_6_12;
 }
 

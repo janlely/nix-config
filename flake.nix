@@ -1,4 +1,4 @@
-# ~/nix-config/flake.nix
+# ~/nix-config/flake.nix {
 {
   description = "My NixOS system configuration";
 
@@ -20,10 +20,11 @@
     let
       system = "x86_64-linux";  # 替换为 aarch64-linux（如 Mac M 系列或 ARM 服务器）
       pkgs = nixpkgs.legacyPackages.${system};
+      hostname = "janlely-nixos";
     in
     {
       # 定义 NixOS 系统配置
-      nixosConfigurations.janlely-nixos = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
           ./configuration.nix
@@ -46,7 +47,14 @@
       };
 
       # 便于调试：暴露系统构建产物
-      packages.${system}.default = self.nixosConfigurations.janlely.config.system.build.toplevel;
+      packages.${system}.default = self.nixosConfigurations.${hostname}.config.system.build.toplevel;
       formatter.${system} = pkgs.alejandra;
+       
+      #devShells.default = pkgs.mkShell {
+      #  packages = with pkgs; [ uv ];
+      #  shellHook = ''
+      #    echo "uv 环境已准备好"
+      #  '';
+      #};
     };
 }
