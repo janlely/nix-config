@@ -1,5 +1,6 @@
 { config, pkgs, ... }: {
 
+  services.xserver.enable = true;
   services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
@@ -18,6 +19,7 @@
     MOZ_ENABLE_WAYLAND = "1";
     QT_QPA_PLATFORM = "wayland";
     SDL_VIDEODRIVER = "wayland";
+
   };
 
 

@@ -4,6 +4,7 @@
   home.homeDirectory = "/home/janlely"; # ← 你的家目录
 
 
+
   # 安装用户级软件包
   home.packages = with pkgs; [
     curl
@@ -19,7 +20,10 @@
     pkgs.telegram-desktop
     pkgs.claude-code
     uv
+    gnome-tweaks
+    dconf-editor
   ];
+
 
 
 
@@ -61,4 +65,19 @@
 
   # 启用 Home Manager 的状态版本（类似 system.stateVersion）
   home.stateVersion = "25.11";
+
+  home.sessionVariables = {
+    MUTTER_DEBUG_DISABLE_HW_CURSORS = "1";
+    WLR_NO_HARDWARE_CURSORS = "1";
+    GSK_RENDERER = "ngl";
+  };
+
+
+  home.pointerCursor = {
+    gtk.enable = true;        # 让 GTK 应用生效
+    x11.enable = true;        # 让 X11 / XWayland 生效
+    name = "Bibata-Modern-Classic";   # 光标主题名称
+    package = pkgs.bibata-cursors;    # 提供这个主题的包
+    size = 24;                        # 光标大小
+  };
 }

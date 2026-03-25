@@ -281,7 +281,8 @@
 
   programs.nix-ld.enable = true;
  
+  
+  programs.dconf.enable = true;
 
-  #boot.kernelPackages = pkgs.linuxPackages_6_12;
 }
 
