@@ -2,7 +2,7 @@
 { config, pkgs, ... }: {
   home.username = "janlely";           # ← 你的用户名
   home.homeDirectory = "/home/janlely"; # ← 你的家目录
-
+  nixpkgs.config.allowUnfree = true;
 
 
   # 安装用户级软件包
@@ -76,7 +76,7 @@
   home.pointerCursor = {
     gtk.enable = true;        # 让 GTK 应用生效
     x11.enable = true;        # 让 X11 / XWayland 生效
-    name = "Bibata-Modern-Classic";   # 光标主题名称
+    name = "Bibata-Modern-Ice";   # 光标主题名称
     package = pkgs.bibata-cursors;    # 提供这个主题的包
     size = 24;                        # 光标大小
   };

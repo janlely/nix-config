@@ -21,6 +21,7 @@
       system = "x86_64-linux";  # 替换为 aarch64-linux（如 Mac M 系列或 ARM 服务器）
       pkgs = nixpkgs.legacyPackages.${system};
       hostname = "janlely-nixos";
+      username = "janlely";
     in
     {
       # 定义 NixOS 系统配置
@@ -39,6 +40,9 @@
             home-manager.backupFileExtension = "hm.bak";
           }
 
+          {
+            nixpkgs.config.allowUnfree = true;
+          }
           # 可选：启用 NUR overlay
           #{
           #  nixpkgs.overlays = [ inputs.nur.overlay.default ];
@@ -46,15 +50,20 @@
         ];
       };
 
+      # ==================== 新增：Home Manager 配置 ====================
+      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${system};
+        extraSpecialArgs = { inherit inputs; };
+
+        modules = [
+          ./home.nix
+        ];
+      };
+
+
       # 便于调试：暴露系统构建产物
       packages.${system}.default = self.nixosConfigurations.${hostname}.config.system.build.toplevel;
       formatter.${system} = pkgs.alejandra;
        
-      #devShells.default = pkgs.mkShell {
-      #  packages = with pkgs; [ uv ];
-      #  shellHook = ''
-      #    echo "uv 环境已准备好"
-      #  '';
-      #};
     };
 }
