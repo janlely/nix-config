@@ -8,7 +8,6 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./desktop.nix
       ./nvidia.nix
     ];
 
@@ -163,6 +162,7 @@
     docker
     mihomo
     flameshot
+    pkgs.kitty 
   ];
 
 
@@ -280,6 +280,8 @@
   users.extraGroups.docker.members = [ "janlely" ];
 
   programs.nix-ld.enable = true;
+  programs.hyprland.enable = true; 
+
  
   
   programs.dconf.enable = true;

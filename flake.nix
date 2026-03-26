@@ -14,6 +14,7 @@
 
     # 可选：NUR（社区包仓库）
     nur.url = "github:nix-community/NUR";
+    hyprland.url = "github:hyprwm/Hyprland";
   };
 
   outputs = inputs @ { self, nixpkgs, home-manager, ... }:
@@ -43,6 +44,7 @@
           {
             nixpkgs.config.allowUnfree = true;
           }
+
           # 可选：启用 NUR overlay
           #{
           #  nixpkgs.overlays = [ inputs.nur.overlay.default ];
@@ -57,6 +59,15 @@
 
         modules = [
           ./home.nix
+
+          {
+            wayland.windowManager.hyprland = {
+              enable = true;
+              # set the flake package
+              package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+              portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+	    };
+          }
         ];
       };
 
