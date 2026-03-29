@@ -142,6 +142,7 @@
     GTK_IM_MODULE = "fcitx";
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
+    GLFW_IM_MODULE = "ibus";
   };
 
 
@@ -282,6 +283,7 @@
   programs.nix-ld.enable = true;
   programs.hyprland.enable = true; 
 
+  services.dbus.enable = true;
  
   
   programs.dconf.enable = true;
