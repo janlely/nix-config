@@ -24,6 +24,22 @@
     xdg-desktop-portal
     xdg-desktop-portal-hyprland
     grim
+    libnotify
+    jq
+    tailscale
+
+    (pkgs.writeShellScriptBin "hyprlayout-toggle" ''
+      #!/usr/bin/env bash
+      CURRENT=$(hyprctl getoption general:layout -j | jq -r '.str')
+
+      if [ "$CURRENT" = "master" ]; then
+        hyprctl keyword general:layout "dwindle"
+        notify-send "布局切换" "→ Dwindle 等分布局（二叉树）" -i preferences-desktop-display
+      else
+        hyprctl keyword general:layout "master"
+        notify-send "布局切换" "→ Master 主从布局（居中大窗口）" -i preferences-desktop-display
+      fi
+    '')
   ];
 
   programs.git = {
@@ -131,6 +147,7 @@
 	  ''$mod, left,  workspace, e-1''
 	  ''$mod, right,  workspace, e+1''
 	  ''$mod, L, exec, hyprlock''
+	  ''$mod SHIFT, L, exec, hyprlayout-toggle''
         ]
         ++ (
            builtins.concatLists (builtins.genList (i:
