@@ -154,6 +154,7 @@
   virtualisation.libvirtd.enable = true;
   virtualisation.libvirtd.qemu.swtpm.enable = true;
   
+  services.tailscale.enable = true;
   
   environment.systemPackages = with pkgs; [
     qemu
@@ -164,6 +165,7 @@
     mihomo
     flameshot
     pkgs.kitty 
+    pkgs.tailscale
   ];
 
 

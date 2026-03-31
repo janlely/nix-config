@@ -26,7 +26,9 @@
     grim
     libnotify
     jq
-    tailscale
+    pkgs.wpsoffice
+    pkgs.obsidian
+    pkgs.syncthing
 
     (pkgs.writeShellScriptBin "hyprlayout-toggle" ''
       #!/usr/bin/env bash
@@ -41,6 +43,9 @@
       fi
     '')
   ];
+
+  services.syncthing.enable = true;
+  programs.yazi.enable = true;
 
   programs.git = {
     enable = true;
@@ -74,7 +79,13 @@
     };
     initContent = ''
       eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
-      source /etc/profiles/per-user/$USER/share/fzf/key-bindings.zsh
+      if command -v fzf >/dev/null 2>&1; then
+        eval "$(fzf --zsh)"
+      fi
+
+      bindkey '^R' fzf-history-widget
+      bindkey '^T' fzf-file-widget
+      bindkey '^[c' fzf-cd-widget
     '';
   };
 
