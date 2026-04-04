@@ -21,11 +21,19 @@
     pkgs.claude-code
     uv
     rofi
+    rofimoji
+    unipicker
+    wofi
     xdg-desktop-portal
     xdg-desktop-portal-hyprland
     grim
     libnotify
     jq
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fira-code
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
     pkgs.wpsoffice
     pkgs.obsidian
     pkgs.syncthing
@@ -41,6 +49,40 @@
         hyprctl keyword general:layout "master"
         notify-send "布局切换" "→ Master 主从布局（居中大窗口）" -i preferences-desktop-display
       fi
+    '')
+
+    (pkgs.writeShellScriptBin "hypr-fullscreen" ''
+      #!/usr/bin/env bash
+      # ~/.config/hypr/scripts/new-fullscreen-workspace.sh
+      # 功能：创建新 workspace（放在 workspace 1 之后），移动当前窗口，全屏
+      
+      # 获取当前所有普通 workspace 的 ID（排除 special workspace）
+      current_ws=$(hyprctl workspaces -j | jq -r '.[] | select(.id > 0) | .id' | sort -n)
+      
+      if [[ -z "$current_ws" ]]; then
+        # 第一次使用，从 2 开始（1 留给浮动）
+        new_ws=2
+      else
+        # 找到最大的 workspace ID，然后 +1
+        max_ws=$(echo "$current_ws" | tail -1)
+        new_ws=$((max_ws + 1))
+      fi
+      
+      # 如果新 workspace 小于 2，强制设为 2
+      if [[ $new_ws -lt 2 ]]; then
+        new_ws=2
+      fi
+      
+      echo "Creating new workspace: $new_ws"
+      
+      # 移动当前窗口到新 workspace 并切换过去
+      hyprctl dispatch movetoworkspace "$new_ws"
+      
+      # 短暂延迟确保窗口已移动
+      sleep 0.08
+      
+      # 进入真全屏
+      hyprctl dispatch fullscreen 0
     '')
   ];
 
@@ -110,28 +152,33 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
-    # set the flake package
-    #package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    #portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
 
     settings = {
       "$mod" = "SUPER";
       general = {
-        layout = "master";
-	gaps_in = 5;
-	gaps_out = 10;
+        #layout = "master";
+	#gaps_in = 5;
+	#gaps_out = 10;
 	border_size = 2;
+        resize_on_border = true;
+        extend_border_grab_area = 15;
+        hover_icon_on_border = true;
       };
-      master = {
-        orientation = "center";       # 主窗口居中，从窗口左右交替垂直排列
-        mfact = 0.70;                 # 主窗口占据约 70% 空间（推荐 0.65~0.75，根据喜好调整）
-        new_status = "master";         # 新窗口默认成为主窗口
-        new_on_top = true;
-        allow_small_split = false;    # 通常保持 false（不想多个主窗口水平小分割）
 
-        # 控制何时真正居中（推荐设 0：始终居中，即使只有一个窗口）
-        slave_count_for_center_master = 0;
+      decoration = {
+        rounding = 10;
       };
+
+      #master = {
+      #  orientation = "center";       # 主窗口居中，从窗口左右交替垂直排列
+      #  mfact = 0.70;                 # 主窗口占据约 70% 空间（推荐 0.65~0.75，根据喜好调整）
+      #  new_status = "master";         # 新窗口默认成为主窗口
+      #  new_on_top = true;
+      #  allow_small_split = false;    # 通常保持 false（不想多个主窗口水平小分割）
+
+      #  # 控制何时真正居中（推荐设 0：始终居中，即使只有一个窗口）
+      #  slave_count_for_center_master = 0;
+      #};
 
       bezier = [
         "easeOutQuint, 0.23, 1, 0.32, 1"
@@ -158,23 +205,26 @@
 	  ''$mod, left,  workspace, e-1''
 	  ''$mod, right,  workspace, e+1''
 	  ''$mod, L, exec, hyprlock''
-	  ''$mod SHIFT, L, exec, hyprlayout-toggle''
-        ]
-        ++ (
-           builtins.concatLists (builtins.genList (i:
-             let ws = i + 1;
-             in [
-      	 "$mod, code:1${toString i}, workspace, ${toString ws}"
-      	 "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
-             ]
-           )
-           9)
-        );
+	  ''$mod, mouse:272, movewindow''
+	  ''$mod, E, exec, rofimoji --selector wofi --action copy''
+	  ''$mod, F, exec, hypr-fullscreen''
+        ];
+        #++ (
+        #   builtins.concatLists (builtins.genList (i:
+        #     let ws = i + 1;
+        #     in [
+      	# "$mod, code:1${toString i}, workspace, ${toString ws}"
+      	# "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
+        #     ]
+        #   )
+        #   9)
+        #);
     };
   };
 
   services.flameshot = {
     enable = true;
+    
   
     settings = {
       General = {
@@ -249,4 +299,10 @@
       ];
     };
   };
+
+  xdg.configFile = {
+    "waybar/config".source = ./waybar/config;
+    "waybar/style.css".source = ./waybar/style.css;
+  };
+
 }
