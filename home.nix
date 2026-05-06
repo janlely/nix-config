@@ -3,6 +3,7 @@
   home.username = "janlely";           # ← 你的用户名
   home.homeDirectory = "/home/janlely"; # ← 你的家目录
   nixpkgs.config.allowUnfree = true;
+  fonts.fontconfig.enable = true;
 
 
   # 安装用户级软件包
@@ -29,64 +30,50 @@
     grim
     libnotify
     jq
-    nerd-fonts.jetbrains-mono
-    nerd-fonts
+    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.nerd-fonts.fira-code
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
+    font-awesome
     pkgs.wpsoffice
     pkgs.obsidian
     pkgs.syncthing
-
-    (pkgs.writeShellScriptBin "hyprlayout-toggle" ''
-      #!/usr/bin/env bash
-      CURRENT=$(hyprctl getoption general:layout -j | jq -r '.str')
-
-      if [ "$CURRENT" = "master" ]; then
-        hyprctl keyword general:layout "dwindle"
-        notify-send "布局切换" "→ Dwindle 等分布局（二叉树）" -i preferences-desktop-display
-      else
-        hyprctl keyword general:layout "master"
-        notify-send "布局切换" "→ Master 主从布局（居中大窗口）" -i preferences-desktop-display
-      fi
-    '')
+    pkgs.socat
+    pkgs.wechat
+    pkgs.proxychains-ng
 
     (pkgs.writeShellScriptBin "hypr-fullscreen" ''
       #!/usr/bin/env bash
-      # ~/.config/hypr/scripts/new-fullscreen-workspace.sh
-      # 功能：创建新 workspace（放在 workspace 1 之后），移动当前窗口，全屏
+      WINDOW_INFO=$(hyprctl activewindow -j)
+      IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
+      CURRENT_WORKSPACE=$(echo "$WINDOW_INFO" | jq '.workspace.id')
       
-      # 获取当前所有普通 workspace 的 ID（排除 special workspace）
-      current_ws=$(hyprctl workspaces -j | jq -r '.[] | select(.id > 0) | .id' | sort -n)
-      
-      if [[ -z "$current_ws" ]]; then
-        # 第一次使用，从 2 开始（1 留给浮动）
-        new_ws=2
+      # 逻辑判断
+      if [ "$IS_FULLSCREEN" -eq 2 ]; then
+          # 状态 A: 已经是全屏 -> 退出全屏并移回工作区 1
+          hyprctl dispatch fullscreen 0
+          hyprctl dispatch movetoworkspace 1
+      elif [ "$IS_FULLSCREEN" -eq 1 ]; then
+          hyprctl dispatch fullscreen 1
+          hyprctl dispatch movetoworkspace 1
       else
-        # 找到最大的 workspace ID，然后 +1
-        max_ws=$(echo "$current_ws" | tail -1)
-        new_ws=$((max_ws + 1))
+          # 状态 B: 不是全屏 -> 移到右侧新工作区并全屏
+          # 这里使用 r+1 是为了灵活性，如果你固定想去某个区也可以改号
+          hyprctl dispatch movetoworkspace r+1
+          sleep 0.1
+          hyprctl dispatch fullscreen $1
       fi
-      
-      # 如果新 workspace 小于 2，强制设为 2
-      if [[ $new_ws -lt 2 ]]; then
-        new_ws=2
-      fi
-      
-      echo "Creating new workspace: $new_ws"
-      
-      # 移动当前窗口到新 workspace 并切换过去
-      hyprctl dispatch movetoworkspace "$new_ws"
-      
-      # 短暂延迟确保窗口已移动
-      sleep 0.08
-      
-      # 进入真全屏
-      hyprctl dispatch fullscreen 0
     '')
   ];
 
   services.syncthing.enable = true;
+  #services.syncthing = {
+  #  enable = true;
+  #  guiAddress = "0.0.0.0:8384";
+  #  insecureSkipHostcheck = true;
+  #};
+
   programs.yazi.enable = true;
 
   programs.git = {
@@ -154,31 +141,32 @@
     enable = true;
 
     settings = {
+
       "$mod" = "SUPER";
+
+      exec-once = [
+	"fcitx5"
+      ];
+
       general = {
-        #layout = "master";
-	#gaps_in = 5;
-	#gaps_out = 10;
+        layout = "master";
 	border_size = 2;
         resize_on_border = true;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
       };
 
+
+      workspace = [
+        "f[1], gapsout:0, gapsin:0"
+      ];
+
+
+
       decoration = {
         rounding = 10;
       };
 
-      #master = {
-      #  orientation = "center";       # 主窗口居中，从窗口左右交替垂直排列
-      #  mfact = 0.70;                 # 主窗口占据约 70% 空间（推荐 0.65~0.75，根据喜好调整）
-      #  new_status = "master";         # 新窗口默认成为主窗口
-      #  new_on_top = true;
-      #  allow_small_split = false;    # 通常保持 false（不想多个主窗口水平小分割）
-
-      #  # 控制何时真正居中（推荐设 0：始终居中，即使只有一个窗口）
-      #  slave_count_for_center_master = 0;
-      #};
 
       bezier = [
         "easeOutQuint, 0.23, 1, 0.32, 1"
@@ -200,25 +188,18 @@
         [
           ''$mod, RETURN, exec, kitty''
           ''$mod, M, layoutmsg, swapwithmaster''
-          ''$mod, D, exec, rofi -show drun''
+          ''$mod, D, exec, rofi -show drun -show-icons''
+          ''$mod, Tab, exec, rofi -show window -show-icons''
           ''$mod, A, exec, flameshot gui -p ~/Pictures/Screenshots''
 	  ''$mod, left,  workspace, e-1''
 	  ''$mod, right,  workspace, e+1''
 	  ''$mod, L, exec, hyprlock''
 	  ''$mod, mouse:272, movewindow''
 	  ''$mod, E, exec, rofimoji --selector wofi --action copy''
-	  ''$mod, F, exec, hypr-fullscreen''
+	  ''$mod, F, exec, hypr-fullscreen 1''
+	  ''$mod SHIFT, F, exec, hypr-fullscreen 0''
+	  ''$mod, T, togglesplit, ''
         ];
-        #++ (
-        #   builtins.concatLists (builtins.genList (i:
-        #     let ws = i + 1;
-        #     in [
-      	# "$mod, code:1${toString i}, workspace, ${toString ws}"
-      	# "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
-        #     ]
-        #   )
-        #   9)
-        #);
     };
   };
 
@@ -300,9 +281,5 @@
     };
   };
 
-  xdg.configFile = {
-    "waybar/config".source = ./waybar/config;
-    "waybar/style.css".source = ./waybar/style.css;
-  };
 
 }
