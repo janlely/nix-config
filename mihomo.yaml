@@ -1,0 +1,145 @@
+# TUN 配置（核心，全局透明代理）
+tun:
+  enable: true
+  stack: mixed               # system / mixed / gvisor，mixed 平衡性好
+  skip-proxy-interfaces:
+    - br0
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  strict-route: true         # 防路由泄漏，强烈推荐
+
+# DNS 配置（防泄漏 + 分流）
+dns:
+  enable: true
+  ipv6: false
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.xiaomi.com"
+    - "localhost.ptlogin2.qq.com"  # 可按需添加本地域名
+  nameserver:
+    - https://120.53.53.53/dns-query
+    - https://223.5.5.5/dns-query
+  proxy-server-nameserver:
+    - https://120.53.53.53/dns-query
+    - https://223.5.5.5/dns-query
+  nameserver-policy:
+    "geosite:cn,private":
+      - https://120.53.53.53/dns-query
+      - https://223.5.5.5/dns-query
+    "geosite:geolocation-!cn":
+      - https://dns.cloudflare.com/dns-query
+      - https://dns.google/dns-query
+
+
+geodata-mode: true
+geox-url:
+  geoip: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat"
+  geosite: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+  mmdb: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country-lite.mmdb"
+  asn: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
+
+proxies:
+  - {name: 纯净出口, server: 195.86.180.38, port: 2340, type: socks5, username: ty34kelewwqcl49s, password: dqxi5YUe6W, dialer-proxy: "♻️ 自动选择"}
+  - {name: 🇭🇰 香港 01 Trojan, server: gohk1.fireduocc.com, port: 12722, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇭🇰 香港 02 Trojan, server: gohk2.fireduocc.com, port: 12731, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇭🇰 香港 03 Trojan, server: gohk3.fireduocc.com, port: 16258, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇭🇰 香港 04 Trojan, server: gohk4.fireduocc.com, port: 31440, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇭🇰 香港 05 Trojan, server: gohk5.fireduocc.com, port: 27896, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇭🇰 香港 06 [Home] | 2x Trojan", server: gohk6.fireduocc.com, port: 24572, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇯🇵 日本 01 Trojan, server: gojp1.fireduocc.com, port: 13493, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇯🇵 日本 02 Trojan, server: gojp2.fireduocc.com, port: 21494, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇯🇵 日本 03 Trojan, server: gojp3.fireduocc.com, port: 32441, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇯🇵 日本 04 [Home] | 2x Trojan", server: gojp3.fireduocc.com, port: 42144, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇨🇳 台湾 01 Trojan, server: gotw1.fireduocc.com, port: 32076, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇨🇳 台湾 02 Trojan, server: gotw2.fireduocc.com, port: 16272, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇨🇳 台湾 03 Trojan, server: gotw3.fireduocc.com, port: 18250, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇨🇳 台湾 04 [Home] | 2x Trojan", server: gotw3.fireduocc.com, port: 47203, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇸🇬 新加坡 01 Trojan, server: gosg1.fireduocc.com, port: 28424, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇸🇬 新加坡 02 Trojan, server: gosg2.fireduocc.com, port: 23580, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇸🇬 新加坡 03 Trojan, server: gosg3.fireduocc.com, port: 25236, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇺🇸 美国 01 Trojan, server: gous1.fireduocc.com, port: 34826, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇺🇸 美国 02 Trojan, server: gous2.fireduocc.com, port: 31682, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇺🇸 美国 03 Trojan, server: gous3.fireduocc.com, port: 31678, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇨🇦 加拿大 Trojan, server: gokr.fireduocc.com, port: 46230, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇰🇷 韩国 01 Trojan, server: gokr.fireduocc.com, port: 15345, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇰🇷 韩国 02 Trojan, server: gokr.fireduocc.com, port: 15893, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇦🇷 阿根廷 Trojan, server: gokr.fireduocc.com, port: 33578, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇬🇧 英国 Trojan, server: goeu.fireduocc.com, port: 45576, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇩🇪 德国 Trojan, server: goeu.fireduocc.com, port: 45577, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: 🇹🇷 土耳其 Trojan, server: goeu.fireduocc.com, port: 28212, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇭🇰 香港 [IEPL] | 4x", server: iepl.fireduocc.com, port: 12751, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇨🇳 台湾 [IEPL] | 4x", server: iepl.fireduocc.com, port: 34811, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇸🇬 新加坡 [IEPL] | 4x", server: iepl.fireduocc.com, port: 34840, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇯🇵 日本 [IEPL] | 4x", server: iepl.fireduocc.com, port: 64587, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false}
+  - {name: "🇺🇸 美国 [IEPL] | 4x", server: iepl.fireduocc.com, port: 62063, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false}
+  - name: "直连"
+    type: direct
+    udp: true
+
+proxy-groups:
+  - name: PURE-OUT
+    type: select
+    proxies:
+      - 纯净出口
+
+  - name: ♻️ 自动选择
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+      - 🇭🇰 香港 01 Trojan
+      - 🇭🇰 香港 02 Trojan
+      - 🇭🇰 香港 03 Trojan
+      - 🇭🇰 香港 04 Trojan
+      - 🇭🇰 香港 05 Trojan
+      - 🇭🇰 香港 06 [Home] | 2x Trojan
+      - 🇯🇵 日本 01 Trojan
+      - 🇯🇵 日本 02 Trojan
+      - 🇯🇵 日本 03 Trojan
+      - 🇯🇵 日本 04 [Home] | 2x Trojan
+      - 🇨🇳 台湾 01 Trojan
+      - 🇨🇳 台湾 02 Trojan
+      - 🇨🇳 台湾 03 Trojan
+      - 🇨🇳 台湾 04 [Home] | 2x Trojan
+      - 🇸🇬 新加坡 01 Trojan
+      - 🇸🇬 新加坡 02 Trojan
+      - 🇸🇬 新加坡 03 Trojan
+      - 🇺🇸 美国 01 Trojan
+      - 🇺🇸 美国 02 Trojan
+      - 🇺🇸 美国 03 Trojan
+      - 🇨🇦 加拿大 Trojan
+      - 🇰🇷 韩国 01 Trojan
+      - 🇰🇷 韩国 02 Trojan
+      - 🇦🇷 阿根廷 Trojan
+      - 🇬🇧 英国 Trojan
+      - 🇩🇪 德国 Trojan
+      - 🇹🇷 土耳其 Trojan
+      - 🇭🇰 香港 [IEPL] | 4x
+      - 🇨🇳 台湾 [IEPL] | 4x
+      - 🇸🇬 新加坡 [IEPL] | 4x
+      - 🇯🇵 日本 [IEPL] | 4x
+      - 🇺🇸 美国 [IEPL] | 4x
+
+
+
+rules:
+  - GEOIP,LAN,直连,no-resolve
+  - GEOSITE,private,直连,no-resolve
+  - GEOSITE,CN,直连
+  - GEOIP,CN,直连
+  - DOMAIN-SUFFIX,nvidia.com,PURE-OUT
+  - DOMAIN-SUFFIX,chatgpt.com,PURE-OUT
+  - DOMAIN-SUFFIX,claude.ai,PURE-OUT
+  - DOMAIN-SUFFIX,claude.com,PURE-OUT
+  - DOMAIN-SUFFIX,google.com,PURE-OUT
+  - DOMAIN,grok.com,PURE-OUT
+  - MATCH,♻️ 自动选择
