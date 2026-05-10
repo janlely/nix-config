@@ -167,6 +167,7 @@
     pkgs.kitty 
     pkgs.tailscale
     pkgs.ipset
+    pkgs.sing-box
   ];
 
 
@@ -291,6 +292,69 @@
   
   programs.dconf.enable = true;
 
+  programs.direnv.enable = true;
+  programs.direnv.nix-direnv.enable = true;
 
+
+  boot.kernel.sysctl = {
+    "net.ipv6.conf.all.disable_ipv6" = true;   # 如果你不用 IPv6
+    "net.ipv6.conf.default.disable_ipv6" = true;
+  };
+
+  environment.etc."mihomo/config.yaml" = {
+    source = ./mihomo.yaml;
+    mode = "644";
+  };
+
+  #services.mihomo = {
+  #  enable = true;
+  #  configFile = "/etc/mihomo/config.yaml"; # 指向你的配置文件
+  #};
+
+  #systemd.services.mihomo = {
+  #  serviceConfig = {
+  #    User = "root";                    # 关键：强制 root
+  #    Group = "root";
+  #
+  #    AmbientCapabilities = [
+  #      "CAP_NET_ADMIN"
+  #      "CAP_NET_RAW"
+  #      "CAP_NET_BIND_SERVICE"
+  #      "CAP_SYS_ADMIN"
+  #      "CAP_SYS_RESOURCE"
+  #    ];
+  #    CapabilityBoundingSet = [
+  #      "CAP_NET_ADMIN"
+  #      "CAP_NET_RAW"
+  #      "CAP_NET_BIND_SERVICE"
+  #      "CAP_SYS_ADMIN"
+  #      "CAP_SYS_RESOURCE"
+  #    ];
+  #
+  #    LimitNOFILE = "1048576";
+  #    LimitNPROC = "unlimited";
+  #    Restart = "always";
+  #    RestartSec = "3";
+  #  };
+  #};
+
+  systemd.services.mihomo = {
+    description = "mihomo Clash Meta";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+  
+    serviceConfig = {
+      Type = "simple";
+      User = "root";
+      ExecStart = "${pkgs.mihomo}/bin/mihomo -f /etc/mihomo/config.yaml";
+      
+      AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
+      CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
+  
+      Restart = "always";
+      RestartSec = "3";
+      LimitNOFILE = 1048576;
+    };
+  };
 }
 

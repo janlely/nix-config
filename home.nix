@@ -48,18 +48,32 @@
       WINDOW_INFO=$(hyprctl activewindow -j)
       IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
       CURRENT_WORKSPACE=$(echo "$WINDOW_INFO" | jq '.workspace.id')
+      MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
       
       # 逻辑判断
       if [ "$IS_FULLSCREEN" -eq 2 ]; then
           # 状态 A: 已经是全屏 -> 退出全屏并移回工作区 1
           hyprctl dispatch fullscreen 0
           hyprctl dispatch movetoworkspace 1
+          for i in $(seq $((CURRENT_WORKSPACE + 1)) "$MAX_WS"); do
+              hyprctl dispatch movetoworkspacesilent "r-1" "workspace:$i" 2>/dev/null
+          done
       elif [ "$IS_FULLSCREEN" -eq 1 ]; then
           hyprctl dispatch fullscreen 1
           hyprctl dispatch movetoworkspace 1
+          for i in $(seq $((CURRENT_WORKSPACE + 1)) "$MAX_WS"); do
+              hyprctl dispatch movetoworkspacesilent "r-1" "workspace:$i" 2>/dev/null
+          done
       else
           # 状态 B: 不是全屏 -> 移到右侧新工作区并全屏
           # 这里使用 r+1 是为了灵活性，如果你固定想去某个区也可以改号
+
+          for i in $(seq "$MAX_WS" -1 2); do
+              # movetoworkspacesilent 可以避免画面闪烁
+              # 这里的逻辑是：对于工作区 $i 里的所有窗口，移动到 r+1
+              hyprctl dispatch movetoworkspacesilent "r+1" "workspace:$i" 2>/dev/null
+          done
+
           hyprctl dispatch movetoworkspace r+1
           sleep 0.1
           hyprctl dispatch fullscreen $1
@@ -199,6 +213,16 @@
 	  ''$mod, F, exec, hypr-fullscreen 1''
 	  ''$mod SHIFT, F, exec, hypr-fullscreen 0''
 	  ''$mod, T, togglesplit, ''
+	  ''$mod, 1, workspace, 1''
+	  ''$mod, 2, workspace, 2''
+	  ''$mod, 3, workspace, 3''
+	  ''$mod, 4, workspace, 4''
+	  ''$mod, 5, workspace, 5''
+	  ''$mod, 6, workspace, 6''
+	  ''$mod, 7, workspace, 7''
+	  ''$mod, 8, workspace, 8''
+	  ''$mod, 9, workspace, 9''
+	  ''$mod, 0, workspace, 0''
         ];
     };
   };
