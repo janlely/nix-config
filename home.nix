@@ -42,6 +42,11 @@
     pkgs.socat
     pkgs.wechat
     pkgs.proxychains-ng
+    pkgs.stack
+    pkgs.zellij
+    pkgs.localsend
+    nomacs
+    tauon
 
     (pkgs.writeShellScriptBin "hypr-fullscreen" ''
       #!/usr/bin/env bash
@@ -129,11 +134,12 @@
       bindkey '^R' fzf-history-widget
       bindkey '^T' fzf-file-widget
       bindkey '^[c' fzf-cd-widget
+      export PATH=$HOME/.local/bin:$PATH
     '';
   };
 
   # 启用 Home Manager 的状态版本（类似 system.stateVersion）
-  home.stateVersion = "25.11";
+  home.stateVersion = "26.05";
 
   home.sessionVariables = {
     MUTTER_DEBUG_DISABLE_HW_CURSORS = "1";
@@ -306,4 +312,20 @@
   };
 
 
+
+  # wezterm
+  programs.wezterm = {
+    enable = true;
+  };
+
+  xdg.configFile."wezterm" = {
+    source = pkgs.fetchFromGitHub {
+      owner = "KevinSilvester";
+      repo = "wezterm-config";
+      rev = "master"; # 或者指定具体的 commit hash / tag 确保稳定性
+      sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # 首次构建时将其留空或填错，Nix 会报错并给出正确的 hash，届时替换即可
+    };
+    # 递归复制整个目录
+    recursive = true; 
+  };
 }

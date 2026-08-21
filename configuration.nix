@@ -168,6 +168,10 @@
     pkgs.tailscale
     pkgs.ipset
     pkgs.sing-box
+    pkgs.ntfs3g
+    android-tools
+    scrcpy
+    yazi
   ];
 
 
@@ -254,18 +258,22 @@
     anyInterface = true;
   };
   
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 53317 ];
+  };
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     trusted-users = [ "root" "@wheel" "janlely" ];  # 或只加 "janlely" 也行
 
     trusted-substituters = [
-      "https://mirrors.cernet.edu.cn/nix-channels/store"
+      #"https://mirrors.cernet.edu.cn/nix-channels/store"
       #"https://cache.nixos.org"
     ];
 
     substituters = [
-      "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
+      #"https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
       #"https://cache.nixos.org?priority=100"                         # 官方放最后
     ];
   };
@@ -279,10 +287,13 @@
   programs.zsh.enable = true;
   users.users.janlely.shell = pkgs.zsh;
 
+  security.pki.certificateFiles = [ ]; # 保持默认或显式安装 cacert 包
+
 
   # docker
   virtualisation.docker.enable = true;
   users.extraGroups.docker.members = [ "janlely" ];
+
 
   programs.nix-ld.enable = true;
   programs.hyprland.enable = true; 
@@ -306,37 +317,6 @@
     mode = "644";
   };
 
-  #services.mihomo = {
-  #  enable = true;
-  #  configFile = "/etc/mihomo/config.yaml"; # 指向你的配置文件
-  #};
-
-  #systemd.services.mihomo = {
-  #  serviceConfig = {
-  #    User = "root";                    # 关键：强制 root
-  #    Group = "root";
-  #
-  #    AmbientCapabilities = [
-  #      "CAP_NET_ADMIN"
-  #      "CAP_NET_RAW"
-  #      "CAP_NET_BIND_SERVICE"
-  #      "CAP_SYS_ADMIN"
-  #      "CAP_SYS_RESOURCE"
-  #    ];
-  #    CapabilityBoundingSet = [
-  #      "CAP_NET_ADMIN"
-  #      "CAP_NET_RAW"
-  #      "CAP_NET_BIND_SERVICE"
-  #      "CAP_SYS_ADMIN"
-  #      "CAP_SYS_RESOURCE"
-  #    ];
-  #
-  #    LimitNOFILE = "1048576";
-  #    LimitNPROC = "unlimited";
-  #    Restart = "always";
-  #    RestartSec = "3";
-  #  };
-  #};
 
   systemd.services.mihomo = {
     description = "mihomo Clash Meta";
@@ -355,6 +335,20 @@
       RestartSec = "3";
       LimitNOFILE = 1048576;
     };
+  };
+
+
+  fileSystems."/mnt/my-passport" = {
+    device = "/dev/disk/by-uuid/74F4FF17F4FEDA76";
+    fsType = "ntfs-3g";
+    options = [ 
+      "defaults" 
+      "nofail" 
+      "uid=1000" 
+      "gid=100" 
+      "umask=022" 
+      "big_writes"
+    ];
   };
 }
 

@@ -1,9 +1,11 @@
 # TUN 配置（核心，全局透明代理）
 tun:
   enable: true
+  device: mihomo
   stack: gvisor   # system / mixed / gvisor，mixed 平衡性好
   skip-proxy-interfaces:
     - br0
+  udp: false 
   dns-hijack:
     - any:53
     - tcp://any:53
@@ -11,6 +13,9 @@ tun:
   auto-redirect: true
   auto-detect-interface: true
   strict-route: true         # 防路由泄漏，强烈推荐
+  exclude-interface:
+    - br0
+    - vnet0
 
 # DNS 配置（防泄漏 + 分流）
 dns:
@@ -47,89 +52,54 @@ geox-url:
   asn: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb"
 
 proxies:
-  - {name: 纯净出口, server: 195.86.180.38, port: 2340, type: socks5, username: ty34kelewwqcl49s, password: dqxi5YUe6W, dialer-proxy: "♻️ 自动选择", udp: true}
-  - {name: 🇭🇰 香港 01 Trojan, server: gohk1.fireduocc.com, port: 12722, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇭🇰 香港 02 Trojan, server: gohk2.fireduocc.com, port: 12731, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇭🇰 香港 03 Trojan, server: gohk3.fireduocc.com, port: 16258, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇭🇰 香港 04 Trojan, server: gohk4.fireduocc.com, port: 31440, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇭🇰 香港 05 Trojan, server: gohk5.fireduocc.com, port: 27896, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇭🇰 香港 06 [Home] | 2x Trojan", server: gohk6.fireduocc.com, port: 24572, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇯🇵 日本 01 Trojan, server: gojp1.fireduocc.com, port: 13493, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇯🇵 日本 02 Trojan, server: gojp2.fireduocc.com, port: 21494, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇯🇵 日本 03 Trojan, server: gojp3.fireduocc.com, port: 32441, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇯🇵 日本 04 [Home] | 2x Trojan", server: gojp3.fireduocc.com, port: 42144, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇨🇳 台湾 01 Trojan, server: gotw1.fireduocc.com, port: 32076, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇨🇳 台湾 02 Trojan, server: gotw2.fireduocc.com, port: 16272, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇨🇳 台湾 03 Trojan, server: gotw3.fireduocc.com, port: 18250, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇨🇳 台湾 04 [Home] | 2x Trojan", server: gotw3.fireduocc.com, port: 47203, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇸🇬 新加坡 01 Trojan, server: gosg1.fireduocc.com, port: 28424, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇸🇬 新加坡 02 Trojan, server: gosg2.fireduocc.com, port: 23580, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇸🇬 新加坡 03 Trojan, server: gosg3.fireduocc.com, port: 25236, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇺🇸 美国 01 Trojan, server: gous1.fireduocc.com, port: 34826, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇺🇸 美国 02 Trojan, server: gous2.fireduocc.com, port: 31682, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇺🇸 美国 03 Trojan, server: gous3.fireduocc.com, port: 31678, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇨🇦 加拿大 Trojan, server: gokr.fireduocc.com, port: 46230, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇰🇷 韩国 01 Trojan, server: gokr.fireduocc.com, port: 15345, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇰🇷 韩国 02 Trojan, server: gokr.fireduocc.com, port: 15893, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇦🇷 阿根廷 Trojan, server: gokr.fireduocc.com, port: 33578, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇬🇧 英国 Trojan, server: goeu.fireduocc.com, port: 45576, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇩🇪 德国 Trojan, server: goeu.fireduocc.com, port: 45577, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: 🇹🇷 土耳其 Trojan, server: goeu.fireduocc.com, port: 28212, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: api.amemv.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇭🇰 香港 [IEPL] | 4x", server: iepl.fireduocc.com, port: 12751, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇨🇳 台湾 [IEPL] | 4x", server: iepl.fireduocc.com, port: 34811, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇸🇬 新加坡 [IEPL] | 4x", server: iepl.fireduocc.com, port: 34840, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇯🇵 日本 [IEPL] | 4x", server: iepl.fireduocc.com, port: 64587, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false, udp: true}
-  - {name: "🇺🇸 美国 [IEPL] | 4x", server: iepl.fireduocc.com, port: 62063, type: trojan, password: e0f05a54-a7fd-4053-8706-63e0c52a2de7, sni: i1.hdslb.com, skip-cert-verify: true, tfo: false, udp: true}
-  - name: "直连"
-    type: direct
-    udp: true
-
+    - {name: 纯净出口, server: 38.213.83.101, port: 2340, type: socks5, username: ty34kelewwqcl49s, password: dqxi5YUe6W, dialer-proxy: "自动选择", udp: true}
+    - { name: '🇭🇰 HK香港-1-AWS-国内官网：ktm.ooo', server: hk1.ktmhyld.com, port: 18385, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇨🇳 TW台湾-1-AWS', server: tw1.ktmhyld.com, port: 18386, sni: tw1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇸🇬 SG新加坡-1-AWS', server: sg1.ktmhyld.com, port: 18383, sni: sg1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇯🇵 JP日本-1-AWS', server: jp1.ktmhyld.com, port: 18385, sni: jp1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇰🇷 KR韩国-1-AWS', server: kr1.ktmhyld.com, port: 18385, sni: kr1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇲🇾 MY马来西亚-1-AWS', server: my1.ktmhyld.com, port: 18385, sni: my1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇹🇭 TH泰国-1-AWS', server: th1.ktmhyld.com, port: 18385, sni: th1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇲🇨 MC印度尼西亚-1-AWS', server: mc1.ktmhyld.com, port: 18385, sni: mc1.ktmhyld.com, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇺🇸 USA美国-1-AWS', server: us1.ktmhyld.com, port: 18387, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇺🇸 USA美国-3', server: us3.ktmurl.club, port: 18338, up: 300, down: 300, skip-cert-verify: true, type: hysteria2, password: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5 }
+    - { name: '🇸🇬 SG新加坡-01-国内官网：ktm.ooo', type: vmess, server: gtm1.ktmwan.net, port: 12901, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇸🇬 SG新加坡-02', type: vmess, server: gtm1.ktmwan.net, port: 12901, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇸🇬 SG新加坡-03', type: vmess, server: gtm1.ktmwan.net, port: 12901, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇸🇬 SG新加坡-04', type: vmess, server: gtm1.ktmwan.net, port: 12901, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇸🇬 SG新加坡-05', type: vmess, server: gtm1.ktmwan.net, port: 12901, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-01', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-02', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-03', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-04', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-05', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-06', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-07', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇭🇰 HK香港-08', type: vmess, server: gtm1.ktmwan.net, port: 12890, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇯🇵 JP日本-01', type: vmess, server: gtm1.ktmwan.net, port: 12883, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇯🇵 JP日本-02', type: vmess, server: gtm1.ktmwan.net, port: 12883, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇯🇵 JP日本-03', type: vmess, server: gtm1.ktmwan.net, port: 12883, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇺🇸 USA美国-01', type: vmess, server: gtm1.ktmwan.net, port: 12885, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇺🇸 USA美国-02', type: vmess, server: gtm1.ktmwan.net, port: 12885, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇺🇸 USA美国-03', type: vmess, server: gtm1.ktmwan.net, port: 12885, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇨🇳 TW台湾-01', type: vmess, server: gtm1.ktmwan.net, port: 12888, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇨🇳 TW台湾-02', type: vmess, server: gtm1.ktmwan.net, port: 12888, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇨🇳 TW台湾-03', type: vmess, server: gtm1.ktmwan.net, port: 12888, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇮🇳 IN印度-01', type: vmess, server: gtm1.ktmwan.net, port: 12887, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇦🇺 AU澳大利亚-01', type: vmess, server: gtm1.ktmwan.net, port: 12889, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇬🇧 UK英国-01', type: vmess, server: gtm1.ktmwan.net, port: 12886, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇨🇦 CA加拿大-01', type: vmess, server: gtm1.ktmwan.net, port: 12897, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇩🇪 DE德国-01', type: vmess, server: gtm1.ktmwan.net, port: 12898, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - { name: '🇫🇷 FR法国-01-国内官网：ktm.ooo', type: vmess, server: gtm1.ktmwan.net, port: 12899, uuid: ffdb7b88-3ac4-4f21-a91b-690ab4ef3dd5, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: { path: /, headers: { Host: baidu.com } }, ws-path: /, ws-headers: { Host: baidu.com } }
+    - name: "直连"
+      type: direct
+      udp: true
 proxy-groups:
-  - name: PURE-OUT
-    type: select
-    proxies:
-      - 纯净出口
-
-  - name: ♻️ 自动选择
-    type: url-test
-    url: http://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 50
-    proxies:
-      - 🇭🇰 香港 01 Trojan
-      - 🇭🇰 香港 02 Trojan
-      - 🇭🇰 香港 03 Trojan
-      - 🇭🇰 香港 04 Trojan
-      - 🇭🇰 香港 05 Trojan
-      - 🇭🇰 香港 06 [Home] | 2x Trojan
-      - 🇯🇵 日本 01 Trojan
-      - 🇯🇵 日本 02 Trojan
-      - 🇯🇵 日本 03 Trojan
-      - 🇯🇵 日本 04 [Home] | 2x Trojan
-      - 🇨🇳 台湾 01 Trojan
-      - 🇨🇳 台湾 02 Trojan
-      - 🇨🇳 台湾 03 Trojan
-      - 🇨🇳 台湾 04 [Home] | 2x Trojan
-      - 🇸🇬 新加坡 01 Trojan
-      - 🇸🇬 新加坡 02 Trojan
-      - 🇸🇬 新加坡 03 Trojan
-      - 🇺🇸 美国 01 Trojan
-      - 🇺🇸 美国 02 Trojan
-      - 🇺🇸 美国 03 Trojan
-      - 🇨🇦 加拿大 Trojan
-      - 🇰🇷 韩国 01 Trojan
-      - 🇰🇷 韩国 02 Trojan
-      - 🇦🇷 阿根廷 Trojan
-      - 🇬🇧 英国 Trojan
-      - 🇩🇪 德国 Trojan
-      - 🇹🇷 土耳其 Trojan
-      - 🇭🇰 香港 [IEPL] | 4x
-      - 🇨🇳 台湾 [IEPL] | 4x
-      - 🇸🇬 新加坡 [IEPL] | 4x
-      - 🇯🇵 日本 [IEPL] | 4x
-      - 🇺🇸 美国 [IEPL] | 4x
-
-
+    - name: PURE-OUT
+      type: select
+      proxies:
+        - 纯净出口
+    - { name: 自动选择, type: url-test, proxies: ['🇭🇰 HK香港-1-AWS-国内官网：ktm.ooo', '🇨🇳 TW台湾-1-AWS', '🇸🇬 SG新加坡-1-AWS', '🇯🇵 JP日本-1-AWS', '🇸🇬 SG新加坡-01-国内官网：ktm.ooo', '🇸🇬 SG新加坡-02', '🇸🇬 SG新加坡-03', '🇸🇬 SG新加坡-04', '🇸🇬 SG新加坡-05', '🇭🇰 HK香港-01', '🇭🇰 HK香港-02', '🇭🇰 HK香港-03', '🇭🇰 HK香港-04', '🇭🇰 HK香港-05', '🇭🇰 HK香港-06', '🇭🇰 HK香港-07', '🇭🇰 HK香港-08', '🇯🇵 JP日本-01', '🇯🇵 JP日本-02', '🇯🇵 JP日本-03', '🇨🇳 TW台湾-01', '🇨🇳 TW台湾-02', '🇨🇳 TW台湾-03'], url: 'http://www.YouTube.com/generate_204', interval: 86400, tolerance: 20 }
 
 rules:
   - GEOIP,LAN,直连,no-resolve
@@ -142,4 +112,7 @@ rules:
   - DOMAIN-SUFFIX,claude.com,PURE-OUT
   - DOMAIN-SUFFIX,google.com,PURE-OUT
   - DOMAIN-SUFFIX,grok.com,PURE-OUT
-  - MATCH,♻️ 自动选择
+  - DOMAIN-SUFFIX,openai.com,PURE-OUT
+  - DOMAIN-SUFFIX,agnes-ai.com,PURE-OUT
+  - MATCH,自动选择
+
