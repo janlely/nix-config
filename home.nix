@@ -2,7 +2,6 @@
 { config, pkgs, inputs, ... }: {
   home.username = "janlely";           # ← 你的用户名
   home.homeDirectory = "/home/janlely"; # ← 你的家目录
-  nixpkgs.config.allowUnfree = true;
   fonts.fontconfig.enable = true;
 
 
