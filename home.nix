@@ -163,7 +163,7 @@
 
       mainMod = "SUPER";
 
-      exec-once = [
+      exec_once = [
 	"fcitx5"
       ];
 
