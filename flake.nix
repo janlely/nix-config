@@ -3,7 +3,6 @@
   description = "My NixOS system configuration";
 
   inputs = {
-    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
     home-manager = {
@@ -15,10 +14,6 @@
     nur.url = "github:nix-community/NUR";
     hyprland.url = "github:hyprwm/Hyprland";
 
-    #hyprland-plugins = {
-    #  url = "github:hyprwm/hyprland-plugins";
-    #  inputs.hyprland.follows = "hyprland";
-    #};
   };
 
   outputs = inputs @ { self, nixpkgs, home-manager, ... }:
@@ -34,7 +29,9 @@
         modules = [
           ./configuration.nix
           ./hardware-configuration.nix
-
+	  {
+	    nixpkgs.config.allowUnfree = true;
+	  }
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
