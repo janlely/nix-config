@@ -325,7 +325,6 @@
       rev = "master"; # 或者指定具体的 commit hash / tag 确保稳定性
       sha256 = "sha256-ENbKJbC3DIR9UPGgBkSWvhOx7TQZE3iyYYcaASoHq2Y="; # 首次构建时将其留空或填错，Nix 会报错并给出正确的 hash，届时替换即可
     };
-    # 递归复制整个目录
     recursive = true; 
   };
 }
