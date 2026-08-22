@@ -55,32 +55,24 @@
       IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
       CURRENT_WORKSPACE=$(echo "$WINDOW_INFO" | jq '.workspace.id')
       MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
-      
-      # 逻辑判断
-      if [ "$IS_FULLSCREEN" -eq 2 ]; then
-          # 状态 A: 已经是全屏 -> 退出全屏并移回工作区 1
+
+      if [ "$IS_FULLSCREEN" -eq 1 ]; then
+          # 已是全屏 → 退出全屏并移回 workspace 1
           hyprctl dispatch fullscreen 0
           hyprctl dispatch movetoworkspace 1
-          for i in $(seq $((CURRENT_WORKSPACE + 1)) "$MAX_WS"); do
-              hyprctl dispatch movetoworkspacesilent "r-1" "workspace:$i" 2>/dev/null
-          done
-      elif [ "$IS_FULLSCREEN" -eq 1 ]; then
-          hyprctl dispatch fullscreen 1
+      elif [ "$IS_FULLSCREEN" -eq 2 ]; then
+          # always-on-top → 退出并移回 workspace 1
+          hyprctl dispatch fullscreen 0
           hyprctl dispatch movetoworkspace 1
-          for i in $(seq $((CURRENT_WORKSPACE + 1)) "$MAX_WS"); do
-              hyprctl dispatch movetoworkspacesilent "r-1" "workspace:$i" 2>/dev/null
-          done
       else
-          # 状态 B: 不是全屏 -> 移到右侧新工作区并全屏
-          # 这里使用 r+1 是为了灵活性，如果你固定想去某个区也可以改号
-
-          for i in $(seq "$MAX_WS" -1 2); do
-              # movetoworkspacesilent 可以避免画面闪烁
-              # 这里的逻辑是：对于工作区 $i 里的所有窗口，移动到 r+1
-              hyprctl dispatch movetoworkspacesilent "r+1" "workspace:$i" 2>/dev/null
-          done
-
-          hyprctl dispatch movetoworkspace r+1
+          # 非全屏 → 移到下一个 workspace 并全屏
+          # 优先复用已有的空闲 workspace（id >= 2），没有才新建
+          EMPTY_WS=$(hyprctl workspaces -j | jq -r 'map(select(.windows == 0 and .id >= 2)) | sort_by(.id) | first | .id // empty')
+          if [ -n "$EMPTY_WS" ]; then
+              hyprctl dispatch movetoworkspace "$EMPTY_WS"
+          else
+              hyprctl dispatch movetoworkspace r+1
+          fi
           sleep 0.1
           hyprctl dispatch fullscreen $1
       fi
