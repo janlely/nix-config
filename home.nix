@@ -94,38 +94,38 @@
   };
 
 
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+  #programs.zsh = {
+  #  enable = true;
+  #  enableCompletion = true;
+  #  autosuggestion.enable = true;
+  #  syntaxHighlighting.enable = true;
 
-    # 可选：oh-my-zsh
-    oh-my-zsh = {
-      enable = true;
-      plugins = [ "git" "docker" ];
-      theme = "robbyrussell";  # 或你喜欢的
-    };
+  #  # 可选：oh-my-zsh
+  #  oh-my-zsh = {
+  #    enable = true;
+  #    plugins = [ "git" "docker" ];
+  #    theme = "robbyrussell";  # 或你喜欢的
+  #  };
 
-    shellAliases = {
-      ll = "eza -l";
-      vim = "nvim";
-      update = "sudo nixos-rebuild switch --flake ~/nix-config#janlely-nixos";
-      clearboot = "sudo nix profile wipe-history --profile /nix/var/nix/profiles/system && sudo nix store gc && sudo nixos-rebuild boot --flake ~/nix-config#janlely-nixos";
-      # 加你常用的别名
-    };
-    initContent = ''
-      eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
-      if command -v fzf >/dev/null 2>&1; then
-        eval "$(fzf --zsh)"
-      fi
+  #  shellAliases = {
+  #    ll = "eza -l";
+  #    vim = "nvim";
+  #    update = "sudo nixos-rebuild switch --flake ~/nix-config#janlely-nixos";
+  #    clearboot = "sudo nix profile wipe-history --profile /nix/var/nix/profiles/system && sudo nix store gc && sudo nixos-rebuild boot --flake ~/nix-config#janlely-nixos";
+  #    # 加你常用的别名
+  #  };
+  #  initContent = ''
+  #    eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
+  #    if command -v fzf >/dev/null 2>&1; then
+  #      eval "$(fzf --zsh)"
+  #    fi
 
-      bindkey '^R' fzf-history-widget
-      bindkey '^T' fzf-file-widget
-      bindkey '^[c' fzf-cd-widget
-      export PATH=$HOME/.local/bin:$PATH
-    '';
-  };
+  #    bindkey '^R' fzf-history-widget
+  #    bindkey '^T' fzf-file-widget
+  #    bindkey '^[c' fzf-cd-widget
+  #    export PATH=$HOME/.local/bin:$PATH
+  #  '';
+  #};
 
   programs.fish = {
     enable = true;
