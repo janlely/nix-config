@@ -284,8 +284,8 @@
   services.openssh.enable = true;
 
   programs.steam.enable = true;
-  programs.zsh.enable = true;
-  users.users.janlely.shell = pkgs.zsh;
+  programs.fish.enable = true;
+  users.users.janlely.shell = pkgs.fish;
 
   security.pki.certificateFiles = [ ]; # 保持默认或显式安装 cacert 包
 

@@ -140,7 +140,7 @@
         eval (fzf --fish | string collect)
       end
 
-      fish_user_key_bindings
+      set -q fish_user_key_bindings; and eval (fish_user_key_bindings)
       set -gx PATH "$HOME/.local/bin" $PATH
     '';
   };
