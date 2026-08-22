@@ -45,6 +45,7 @@
     pkgs.stack
     pkgs.zellij
     pkgs.localsend
+    pkgs.pi-coding-agent
     nomacs
     tauon
 
@@ -176,7 +177,7 @@
 
 
       workspace = [
-        "f, gapsout:0, gapsin:0"
+        "f[1], gapsout:0, gapsin:0"
       ];
 
 
@@ -324,5 +325,14 @@
       sha256 = "sha256-ENbKJbC3DIR9UPGgBkSWvhOx7TQZE3iyYYcaASoHq2Y="; # 首次构建时将其留空或填错，Nix 会报错并给出正确的 hash，届时替换即可
     };
     recursive = true; 
+  };
+
+
+  # pi-coding-agent
+  home.activation = {
+    createPiDir = config.lib.dag.entryAfter ["writeBoundary"] ''
+      $DRY_RUN_CMD mkdir -p $HOME/.pi/agent
+      $DRY_RUN_CMD chmod 700 $HOME/.pi/agent
+    '';
   };
 }
