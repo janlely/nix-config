@@ -53,15 +53,9 @@
       #!/usr/bin/env bash
       WINDOW_INFO=$(hyprctl activewindow -j)
       IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
-      CURRENT_WORKSPACE=$(echo "$WINDOW_INFO" | jq '.workspace.id')
-      MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
 
-      if [ "$IS_FULLSCREEN" -eq 1 ]; then
+      if [ "$IS_FULLSCREEN" -eq 1 ] || [ "$IS_FULLSCREEN" -eq 2 ]; then
           # 已是全屏 → 退出全屏并移回 workspace 1
-          hyprctl dispatch fullscreen 0
-          hyprctl dispatch movetoworkspace 1
-      elif [ "$IS_FULLSCREEN" -eq 2 ]; then
-          # always-on-top → 退出并移回 workspace 1
           hyprctl dispatch fullscreen 0
           hyprctl dispatch movetoworkspace 1
       else
@@ -71,7 +65,8 @@
           if [ -n "$EMPTY_WS" ]; then
               hyprctl dispatch movetoworkspace "$EMPTY_WS"
           else
-              hyprctl dispatch movetoworkspace r+1
+              NEXT_WS=$(( $(hyprctl workspaces -j | jq 'map(.id) | max // 0') + 1 ))
+              hyprctl dispatch movetoworkspace "$NEXT_WS"
           fi
           sleep 0.1
           hyprctl dispatch fullscreen $1
