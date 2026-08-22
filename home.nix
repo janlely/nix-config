@@ -15,6 +15,7 @@
     vulkan-tools vulkan-loader mesa-demos   # 如果你玩游戏/测试图形
     neovim htop ripgrep fd bat eza
     fnm
+    fish
     qwen-code
     wl-clipboard
     fzf
@@ -123,6 +124,25 @@
       bindkey '^T' fzf-file-widget
       bindkey '^[c' fzf-cd-widget
       export PATH=$HOME/.local/bin:$PATH
+    '';
+  };
+
+  programs.fish = {
+    enable = true;
+    shellAliases = {
+      ll = "eza -l";
+      vim = "nvim";
+      update = "sudo nixos-rebuild switch --flake ~/nix-config#janlely-nixos";
+      clearboot = "sudo nix profile wipe-history --profile /nix/var/nix/profiles/system && sudo nix store gc && sudo nixos-rebuild boot --flake ~/nix-config#janlely-nixos";
+    };
+    interactiveShellInit = ''
+      eval (fnm env --use-on-cd --shell fish --corepack-enabled | string collect)
+      if command -v fzf >/dev/null 2>&1
+        eval (fzf --fish | string collect)
+      end
+
+      fish_user_key_bindings
+      set -gx PATH "$HOME/.local/bin" $PATH
     '';
   };
 
@@ -316,7 +336,6 @@
     };
     recursive = true; 
   };
-
 
   # pi-coding-agent
   home.activation = {
