@@ -193,8 +193,6 @@
 
       windowrule = [
       ];
-      windowrulev2 = [
-      ];
       bind =
         [
           ''SUPER, RETURN, exec, wezterm''
@@ -209,7 +207,7 @@
 	  ''SUPER, E, exec, rofimoji --selector wofi --action copy''
 	  ''SUPER, F, exec, hypr-fullscreen 1''
 	  ''SUPER SHIFT, F, exec, hypr-fullscreen 0''
-	  ''SUPER, T, togglesplit, ''
+	  ''SUPER, T, layoutmsg, togglesplit''
 	  ''SUPER, 1, workspace, 1''
 	  ''SUPER, 2, workspace, 2''
 	  ''SUPER, 3, workspace, 3''
