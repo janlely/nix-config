@@ -15,7 +15,6 @@
     vulkan-tools vulkan-loader mesa-demos   # 如果你玩游戏/测试图形
     neovim htop ripgrep fd bat eza
     fnm
-    fish
     qwen-code
     wl-clipboard
     fzf
