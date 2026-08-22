@@ -56,20 +56,25 @@
 
       if [ "$IS_FULLSCREEN" -eq 1 ] || [ "$IS_FULLSCREEN" -eq 2 ]; then
           # 已是全屏 → 退出全屏并移回 workspace 1
-          hyprctl dispatch fullscreen 0
-          hyprctl dispatch movetoworkspace 1
+          hyprctl --batch "dispatch fullscreen 0; dispatch movetoworkspace 1"
       else
-          # 非全屏 → 移到下一个 workspace 并全屏
-          # 优先复用已有的空闲 workspace（id >= 2），没有才新建
-          EMPTY_WS=$(hyprctl workspaces -j | jq -r 'map(select(.windows == 0 and .id >= 2)) | sort_by(.id) | first | .id // empty')
-          if [ -n "$EMPTY_WS" ]; then
-              hyprctl dispatch movetoworkspace "$EMPTY_WS"
+          # 非全屏 → 从第2个workspace开始寻找空的工作区，复用即可用的
+          # hyprctl workspaces 只返回有窗口的workspace，空workspace不列出
+          EXISTING=$(hyprctl workspaces -j | jq -r '[.[] | .id] | sort | .[]')
+          MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
+          TARGET_WS=""
+          for i in $(seq 2 $((MAX_WS + 1))); do
+              if ! echo "$EXISTING" | grep -qx "$i"; then
+                  TARGET_WS="$i"
+                  break
+              fi
+          done
+          if [ -n "$TARGET_WS" ]; then
+              hyprctl --batch "dispatch movetoworkspace $TARGET_WS; dispatch fullscreen $1"
           else
-              NEXT_WS=$(( $(hyprctl workspaces -j | jq 'map(.id) | max // 0') + 1 ))
-              hyprctl dispatch movetoworkspace "$NEXT_WS"
+              NEXT_WS=$((MAX_WS + 1))
+              hyprctl --batch "dispatch movetoworkspace $NEXT_WS; dispatch fullscreen $1"
           fi
-          sleep 0.1
-          hyprctl dispatch fullscreen $1
       fi
     '')
   ];
