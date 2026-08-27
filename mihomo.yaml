@@ -115,5 +115,6 @@ rules:
   - DOMAIN-SUFFIX,grok.com,PURE-OUT
   - DOMAIN-SUFFIX,openai.com,PURE-OUT
   - DOMAIN-SUFFIX,agnes-ai.com,PURE-OUT
+  - DOMAIN-SUFFIX,tailscale.com,直连
   - MATCH,自动选择
 
