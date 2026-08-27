@@ -5,6 +5,7 @@ tun:
   stack: gvisor   # system / mixed / gvisor，mixed 平衡性好
   skip-proxy-interfaces:
     - br0
+    - tailscale0
   udp: false 
   dns-hijack:
     - any:53
