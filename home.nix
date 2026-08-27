@@ -327,7 +327,7 @@
   };
 
   xdg.configFile."wezterm" = {
-    source = /home/janlely/.wezterm-local-config;
+    source = ./wezterm-config;
     recursive = true;
   };
 
