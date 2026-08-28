@@ -51,15 +51,16 @@
 
     (pkgs.writeShellScriptBin "hypr-fullscreen" ''
       #!/usr/bin/env bash
+      # Mac 沉浸式窗口切换：
+      #   - Workspace 1（大本营）的浮动窗口 → 飞向空闲专注区并全屏
+      #   - 专注区的全屏窗口 → 退回 Workspace 1 并恢复浮动
+
       WINDOW_INFO=$(hyprctl activewindow -j)
+      WS_ID=$(echo "$WINDOW_INFO" | jq -r '.workspace.id')
       IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
 
-      if [ "$IS_FULLSCREEN" -eq 1 ] || [ "$IS_FULLSCREEN" -eq 2 ]; then
-          # 已是全屏 → 退出全屏并移回 workspace 1
-          hyprctl --batch "dispatch fullscreen 0; dispatch movetoworkspace 1"
-      else
-          # 非全屏 → 从第2个workspace开始寻找空的工作区，复用即可用的
-          # hyprctl workspaces 只返回有窗口的workspace，空workspace不列出
+      if [ "$WS_ID" = "1" ] || [ "$IS_FULLSCREEN" != "0" ]; then
+          # 在 workspace 1 或已全屏 → 飞向专注区
           EXISTING=$(hyprctl workspaces -j | jq -r '[.[] | .id] | sort | .[]')
           MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
           TARGET_WS=""
@@ -69,12 +70,11 @@
                   break
               fi
           done
-          if [ -n "$TARGET_WS" ]; then
-              hyprctl --batch "dispatch movetoworkspace $TARGET_WS; dispatch fullscreen $1"
-          else
-              NEXT_WS=$((MAX_WS + 1))
-              hyprctl --batch "dispatch movetoworkspace $NEXT_WS; dispatch fullscreen $1"
-          fi
+          [ -z "$TARGET_WS" ] && TARGET_WS=$((MAX_WS + 1))
+          hyprctl --batch "dispatch movetoworkspace $TARGET_WS; dispatch fullscreen 1"
+      else
+          # 在专注区 → 退回大本营 workspace 1
+          hyprctl --batch "dispatch movetoworkspace 1; dispatch fullscreen 0"
       fi
     '')
   ];
@@ -92,39 +92,6 @@
     };
   };
 
-
-  #programs.zsh = {
-  #  enable = true;
-  #  enableCompletion = true;
-  #  autosuggestion.enable = true;
-  #  syntaxHighlighting.enable = true;
-
-  #  # 可选：oh-my-zsh
-  #  oh-my-zsh = {
-  #    enable = true;
-  #    plugins = [ "git" "docker" ];
-  #    theme = "robbyrussell";  # 或你喜欢的
-  #  };
-
-  #  shellAliases = {
-  #    ll = "eza -l";
-  #    vim = "nvim";
-  #    update = "sudo nixos-rebuild switch --flake ~/nix-config#janlely-nixos";
-  #    clearboot = "sudo nix profile wipe-history --profile /nix/var/nix/profiles/system && sudo nix store gc && sudo nixos-rebuild boot --flake ~/nix-config#janlely-nixos";
-  #    # 加你常用的别名
-  #  };
-  #  initContent = ''
-  #    eval "$(fnm env --use-on-cd --shell zsh --corepack-enabled)"
-  #    if command -v fzf >/dev/null 2>&1; then
-  #      eval "$(fzf --zsh)"
-  #    fi
-
-  #    bindkey '^R' fzf-history-widget
-  #    bindkey '^T' fzf-file-widget
-  #    bindkey '^[c' fzf-cd-widget
-  #    export PATH=$HOME/.local/bin:$PATH
-  #  '';
-  #};
 
   programs.fish = {
     enable = true;
@@ -210,11 +177,16 @@
         "fade, 1, 6, easeOutQuint"
       ];
 
-      windowrule = [
+      # 核心规则：新窗口默认进 workspace 1（大本营），且在该工作区保持浮动
+      windowrulev2 = [
+        "workspace 1, silent"       # 所有新窗口默认丢进 Workspace 1
+        "float, workspace:1"        # Workspace 1 内所有窗口保持浮动（非平铺）
+        "size 1400 900, workspace:1"  # 新窗口在 Workspace 1 的初始大小
       ];
       bind =
         [
           ''SUPER, RETURN, exec, wezterm''
+          ''SUPER, C, killactive''
           ''SUPER, M, layoutmsg, swapwithmaster''
           ''SUPER, D, exec, rofi -show drun -show-icons''
           ''SUPER, Tab, exec, rofi -show window -show-icons''
@@ -224,8 +196,7 @@
 	  ''SUPER, L, exec, hyprlock''
 	  ''SUPER, mouse:272, movewindow''
 	  ''SUPER, E, exec, rofimoji --selector wofi --action copy''
-	  ''SUPER, F, exec, hypr-fullscreen 1''
-	  ''SUPER SHIFT, F, exec, hypr-fullscreen 0''
+	  ''SUPER, F, exec, hypr-fullscreen''
 	  ''SUPER, T, layoutmsg, togglesplit''
 	  ''SUPER, 1, workspace, 1''
 	  ''SUPER, 2, workspace, 2''

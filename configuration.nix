@@ -172,7 +172,11 @@
     android-tools
     scrcpy
     yazi
+    blueman
+    pavucontrol
   ];
+
+  services.blueman.enable = true;
 
 
   time.timeZone = "Asia/Shanghai";
