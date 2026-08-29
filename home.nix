@@ -14,18 +14,32 @@
     [ -z "$WS_ID" ] || [ "$WS_ID" = "null" ] && exit 0
 
     # fs=1 表示真正全屏；fs=2 是浮动窗口默认 overfullscreen 状态，不算真全屏
-    # 逻辑：在 ws1 且 fs=1 → 退出全屏、浮动、回到 ws1；否则 → 找空 ws 并全屏
+    # ws1 = 浮动窗口空间，其他 ws = 全屏空间
     if [ "$WS_ID" = "1" ] && [ "$FS" = "1" ]; then
+      # 退出全屏：回到 ws1 并恢复浮动
       hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
       hyprctl dispatch fullscreen 0 2>/dev/null
       hyprctl dispatch movetoworkspace 1 2>/dev/null
       hyprctl dispatch movetofloat 2>/dev/null
     else
-      # 找一个当前没有窗口的 workspace
-      EMPTY_WS=$(hyprctl workspaces -j 2>/dev/null | jq -r '.[] | select(.clients | length == 0) | .id' | head -1)
-      [ -z "$EMPTY_WS" ] && EMPTY_WS=2
+      # 进入全屏：从 ws2 起找第一个空 workspace，没有则动态创建
       hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
-      hyprctl dispatch movetoworkspace "$EMPTY_WS" 2>/dev/null
+      NEW_WS=""
+      for i in $(seq 2 100); do
+        # 检查 ws i 是否存在且为空（用 --arg 避免字符串/数字比较问题）
+        IS_EMPTY=$(hyprctl workspaces -j 2>/dev/null | jq -r --arg id "$i" '.[] | select(.id==$id and (.clients | length) == 0) | .id')
+        if [ -n "$IS_EMPTY" ]; then
+          NEW_WS="$i"
+          break
+        fi
+      done
+      # 如果没找到空 ws，创建一个新的
+      if [ -z "$NEW_WS" ]; then
+        MAX_WS=$(hyprctl workspaces -j 2>/dev/null | jq -r '[.[].id | tonumber] | max // 1')
+        NEW_WS=$((MAX_WS + 1))
+        hyprctl dispatch createnewworkspace "$NEW_WS" 2>/dev/null
+      fi
+      hyprctl dispatch movetoworkspace "$NEW_WS" 2>/dev/null
       hyprctl dispatch fullscreen 1 2>/dev/null
     fi
   '';
@@ -148,13 +162,11 @@ in {
       bindm = [''SUPER, mouse:272, movewindow''];
       # 自动浮动+半屏尺寸
       windowrule = [
+        "float, workspace:1"
         { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
         { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
         { name = "float-steam"; match.class = "steam"; float = true; size = "1720 720"; }
-      ];
-      windowrulev2 = [
-        "float,workspace:1"
       ];
     };
   };
