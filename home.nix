@@ -38,27 +38,59 @@
     fi
   '';
 
-  # 后台监控：ws1内窗口自动浮动 + 路由非ws1窗口
+  # 后台监控：ws1内窗口自动浮动 + 路由非ws1窗口 + 默认半屏大小
   hypr-float-ws1 = pkgs.writeShellScriptBin "hypr-float-ws1" ''
     #!/usr/bin/env bash
-    LAST_CHECK=$(date +%s)
+    TARGET_W=1720
+    TARGET_H=720
+    STEP=80
+
     while true; do
-      NOW=$(date +%s)
-      if [ $((NOW - LAST_CHECK)) -ge 1 ]; then
-        LAST_CHECK=$NOW
-        DATA=$(hyprctl clients -j 2>/dev/null)
-        while IFS= read -r addr; do
-          [ -z "$addr" ] && continue
+      sleep 2
+
+      NEW_W=$(hyprctl monitors -j 2>/dev/null | jq '.[0].width // 1920')
+      NEW_H=$(hyprctl monitors -j 2>/dev/null | jq '.[0].height // 1080')
+      TARGET_W=$((NEW_W / 2))
+      TARGET_H=$((NEW_H / 2))
+
+      ADDRESSES=$(hyprctl clients -j 2>/dev/null | jq -r '.[].address')
+
+      for addr in $ADDRESSES; do
+        [ -z "$addr" ] && continue
+
+        WS_ID=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .workspace.id')
+        FS=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .fullscreen')
+
+        [ -z "$WS_ID" ] && continue
+        [ "$FS" = "1" ] && continue
+
+        if [ "$WS_ID" != "1" ]; then
           hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
           sleep 0.05
           hyprctl dispatch movetoworkspace 1 2>/dev/null
-        done <<< "$(echo "$DATA" | jq -r '.[] | select(.workspace.id != 1 and .fullscreen == 0) | .address')"
-        while IFS= read -r addr; do
-          [ -z "$addr" ] && continue
+        fi
+
+        IS_FLOATING=$(hyprctl clients -j 2>/dev/null | jq --arg a "$addr" '.[] | select(.address==$a) | .floating')
+        if [ "$WS_ID" = "1" ] && [ "$IS_FLOATING" = "false" ]; then
           hyprctl dispatch togglefloating address:"$addr" 2>/dev/null
-        done <<< "$(echo "$DATA" | jq -r '.[] | select(.workspace.id == 1 and .floating == false and .fullscreen == 0) | .address')"
-      fi
-      sleep 0.1
+          sleep 0.3
+        fi
+
+        IS_FLOATING=$(hyprctl clients -j 2>/dev/null | jq --arg a "$addr" '.[] | select(.address==$a) | .floating')
+        if [ "$WS_ID" = "1" ] && [ "$IS_FLOATING" = "true" ]; then
+          CUR_W=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .size[0]')
+          CUR_H=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .size[1]')
+          if [ "$CUR_W" != "null" ] && [ "$CUR_H" != "null" ]; then
+            if [ $CUR_W -lt $((TARGET_W - 100)) ] || [ $CUR_H -lt $((TARGET_H - 100)) ]; then
+              DW=$((CUR_W + STEP > TARGET_W ? TARGET_W - CUR_W : STEP))
+              DH=$((CUR_H + STEP > TARGET_H ? TARGET_H - CUR_H : STEP))
+              hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
+              sleep 0.03
+              hyprctl dispatch resizeactive "$DW" "$DH" 2>/dev/null
+            fi
+          fi
+        fi
+      done
     done
   '';
 in {
