@@ -78,9 +78,6 @@ in {
     qwen-code
     wl-clipboard
     fzf
-    pkgs.telegram-desktop
-    pkgs.claude-code
-    uv
     rofi
     rofimoji
     unipicker
@@ -209,7 +206,6 @@ in {
         ''SUPER, left, workspace, e-1''
         ''SUPER, right, workspace, e+1''
         ''SUPER, L, exec, hyprlock''
-        ''SUPER, mouse:275, movewindow''
         ''SUPER, E, exec, rofimoji --selector wofi --action copy''
         ''SUPER, F, exec, ${pkgs.lib.getExe hypr-fullscreen}''
         ''SUPER, T, layoutmsg, togglesplit''
@@ -223,6 +219,9 @@ in {
         ''SUPER, 8, workspace, 8''
         ''SUPER, 9, workspace, 9''
         ''SUPER, 0, workspace, 0''
+      ];
+      bindm = [
+        ''SUPER, mouse:272, movewindow''
       ];
     };
   };
