@@ -302,27 +302,27 @@
     recursive = true;
   };
 
-  systemd.user.services.wezterm-mux = {
-    Unit = {
-      Description = "WezTerm Multiplexer Server (Headless)";
-      Documentation = [ "https://wezfurlong.org" ];
-      # 确保在用户图形会话准备好后，或者基础系统启动后运行
-      After = [ "default.target" ];
-    };
+  #systemd.user.services.wezterm-mux = {
+  #  Unit = {
+  #    Description = "WezTerm Multiplexer Server (Headless)";
+  #    Documentation = [ "https://wezfurlong.org" ];
+  #    # 确保在用户图形会话准备好后，或者基础系统启动后运行
+  #    After = [ "default.target" ];
+  #  };
 
-    Service = {
-      # 使用绝对路径运行纯后台的多路复用服务器，它完全不需要也不创建 GUI 窗口
-      ExecStart = "${pkgs.wezterm}/bin/wezterm-mux-server";
-      # 如果因为意外挂掉，自动重启
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
+  #  Service = {
+  #    # 使用绝对路径运行纯后台的多路复用服务器，它完全不需要也不创建 GUI 窗口
+  #    ExecStart = "${pkgs.wezterm}/bin/wezterm-mux-server";
+  #    # 如果因为意外挂掉，自动重启
+  #    Restart = "on-failure";
+  #    RestartSec = "5s";
+  #  };
 
-    Install = {
-      # 随用户登录/开机自动启动
-      WantedBy = [ "default.target" ];
-    };
-  };
+  #  Install = {
+  #    # 随用户登录/开机自动启动
+  #    WantedBy = [ "default.target" ];
+  #  };
+  #};
 
   # pi-coding-agent
   home.activation = {
