@@ -188,6 +188,10 @@ in {
         ''SUPER, 7, workspace, 7'' ''SUPER, 8, workspace, 8''
         ''SUPER, 9, workspace, 9'' ''SUPER, 0, workspace, 0''
       ];
+      windowrulev2 = [
+        "size 1720 720, float:0"
+        "floatchecksize, float"
+      ];
       bindm = [''SUPER, mouse:272, movewindow''];
     };
   };
