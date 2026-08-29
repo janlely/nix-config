@@ -209,7 +209,7 @@ in {
         ''SUPER, left, workspace, e-1''
         ''SUPER, right, workspace, e+1''
         ''SUPER, L, exec, hyprlock''
-        ''SUPER, mouse:272, movewindow''
+        ''SUPER, mouse:275, movewindow''
         ''SUPER, E, exec, rofimoji --selector wofi --action copy''
         ''SUPER, F, exec, ${pkgs.lib.getExe hypr-fullscreen}''
         ''SUPER, T, layoutmsg, togglesplit''
