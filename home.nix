@@ -179,9 +179,9 @@
 
       # 核心规则：新窗口默认进 workspace 1（大本营），且在该工作区保持浮动
       windowrulev2 = [
-        "workspace 1, silent"       # 所有新窗口默认丢进 Workspace 1
-        "float, workspace:1"        # Workspace 1 内所有窗口保持浮动（非平铺）
-        "size 1400 900, workspace:1"  # 新窗口在 Workspace 1 的初始大小
+        #"workspace 1, silent"       # 所有新窗口默认丢进 Workspace 1
+        #"float, workspace:1"        # Workspace 1 内所有窗口保持浮动（非平铺）
+        #"size 1400 900, workspace:1"  # 新窗口在 Workspace 1 的初始大小
       ];
       bind =
         [
