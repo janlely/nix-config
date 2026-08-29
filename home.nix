@@ -10,30 +10,17 @@
     fi
     [ -z "$WIN_ADDR" ] || [ "$WIN_ADDR" = "null" ] && exit 0
     WS_ID=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .workspace.id')
-    IS_FULLSCREEN=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .fullscreen')
+    FS=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .fullscreen')
     [ -z "$WS_ID" ] || [ "$WS_ID" = "null" ] && exit 0
-    if [ "$IS_FULLSCREEN" != "0" ]; then
+    # fs=1 表示真正全屏；fs=2 是浮动窗口默认 overfullscreen 状态，不算真全屏
+    # 逻辑：在 ws1 且 fs=1 → 退出全屏；否则 → 进入全屏
+    if [ "$WS_ID" = "1" ] && [ "$FS" = "1" ]; then
       hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
-      sleep 0.15
+      hyprctl dispatch fullscreen 0 2>/dev/null
+      hyprctl dispatch fullscreen 0 2>/dev/null
+    else
+      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
       hyprctl dispatch movetoworkspace 1 2>/dev/null
-      sleep 0.2
-      hyprctl dispatch fullscreen 2>/dev/null
-      sleep 0.1
-      hyprctl dispatch fullscreen 2>/dev/null
-    elif [ "$WS_ID" = "1" ]; then
-      EXISTING=$(hyprctl workspaces -j | jq -r '[.[] | .id] | sort | .[]')
-      MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
-      TARGET=""
-      for i in $(seq 2 $((MAX_WS + 1))); do
-        if ! echo "$EXISTING" | grep -qx "$i"; then
-          TARGET="$i"; break
-        fi
-      done
-      [ -z "$TARGET" ] && TARGET=$((MAX_WS + 1))
-      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
-      sleep 0.15
-      hyprctl dispatch movetoworkspace "$TARGET" 2>/dev/null
-      sleep 0.2
       hyprctl dispatch fullscreen 1 2>/dev/null
     fi
   '';
@@ -49,10 +36,9 @@
         WS_ID=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .workspace.id')
         FS=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .fullscreen')
         [ -z "$WS_ID" ] && continue
-        [ "$FS" = "1" ] && continue
+        [ "$FS" = "1" ] || [ "$FS" = "2" ] && continue
         if [ "$WS_ID" != "1" ]; then
           hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
-          sleep 0.05
           hyprctl dispatch movetoworkspace 1 2>/dev/null
         fi
       done
@@ -97,7 +83,9 @@ in {
     };
     interactiveShellInit = ''
       eval (fnm env --use-on-cd --shell fish --corepack-enabled | string collect)
-      if command -v fzf >/dev/null 2>&1; then eval (fzf --fish | string collect); fi
+      if command -v fzf >/dev/null 2>&1
+        eval (fzf --fish | string collect)
+      end
       set -q fish_user_key_bindings; and eval (fish_user_key_bindings)
       set -gx PATH "$HOME/.local/bin" $PATH
     '';
