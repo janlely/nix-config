@@ -162,7 +162,7 @@ in {
       bindm = [''SUPER, mouse:272, movewindow''];
       # 自动浮动+半屏尺寸
       windowrule = [
-        "float, workspace:1"
+        { name = "float-ws1"; float = true; workspace = 1; }
         { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
         { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
