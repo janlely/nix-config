@@ -38,18 +38,11 @@
     fi
   '';
 
-  # 后台监控：ws1内窗口自动浮动 + 路由非ws1窗口 + 默认半屏大小
+  # 后台监控：只路由非ws1窗口，跳过全屏
   hypr-float-ws1 = pkgs.writeShellScriptBin "hypr-float-ws1" ''
     #!/usr/bin/env bash
-    TARGET_W=1720
-    TARGET_H=720
-    STEP=100
     while true; do
       sleep 3
-      NEW_W=$(hyprctl monitors -j 2>/dev/null | jq '.[0].width // 1920')
-      NEW_H=$(hyprctl monitors -j 2>/dev/null | jq '.[0].height // 1080')
-      TARGET_W=$((NEW_W / 2))
-      TARGET_H=$((NEW_H / 2))
       ADDRESSES=$(hyprctl clients -j 2>/dev/null | jq -r '.[].address')
       for addr in $ADDRESSES; do
         [ -z "$addr" ] && continue
@@ -61,37 +54,6 @@
           hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
           sleep 0.05
           hyprctl dispatch movetoworkspace 1 2>/dev/null
-        fi
-        IF=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .floating')
-        if [ "$IF" = "false" ]; then
-          hyprctl dispatch togglefloating address:"$addr" 2>/dev/null
-          sleep 0.2
-        fi
-        CUR_W=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .size[0]')
-        CUR_H=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$addr" '.[] | select(.address==$a) | .size[1]')
-        [ "$CUR_W" = "null" ] && continue
-        [ "$CUR_H" = "null" ] && continue
-        [ -z "$CUR_W" ] && continue
-        [ -z "$CUR_H" ] && continue
-        DW=$((TARGET_W - CUR_W))
-        DH=$((TARGET_H - CUR_H))
-        if [ "$DW" -gt "$STEP" ]; then
-          hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
-          sleep 0.03
-          hyprctl dispatch resizeactive "$STEP" 0 2>/dev/null
-        elif [ "$DW" -lt "-$STEP" ]; then
-          hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
-          sleep 0.03
-          hyprctl dispatch resizeactive "-$STEP" 0 2>/dev/null
-        fi
-        if [ "$DH" -gt "$STEP" ]; then
-          hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
-          sleep 0.03
-          hyprctl dispatch resizeactive 0 "$STEP" 2>/dev/null
-        elif [ "$DH" -lt "-$STEP" ]; then
-          hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
-          sleep 0.03
-          hyprctl dispatch resizeactive 0 "-$STEP" 2>/dev/null
         fi
       done
     done
@@ -188,11 +150,14 @@ in {
         ''SUPER, 7, workspace, 7'' ''SUPER, 8, workspace, 8''
         ''SUPER, 9, workspace, 9'' ''SUPER, 0, workspace, 0''
       ];
-      windowrulev2 = [
-        "size 1720 720, float:0"
-        "floatchecksize, float"
-      ];
       bindm = [''SUPER, mouse:272, movewindow''];
+      # 自动浮动+半屏尺寸
+      windowrule = [
+        { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
+        { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
+        { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
+        { name = "float-steam"; match.class = "steam"; float = true; size = "1720 720"; }
+      ];
     };
   };
   services.flameshot = {
