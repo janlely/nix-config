@@ -1,18 +1,78 @@
 # ~/nix-config/home.nix
-{ config, pkgs, inputs, ... }: {
-  home.username = "janlely";           # ← 你的用户名
-  home.homeDirectory = "/home/janlely"; # ← 你的家目录
+{ config, pkgs, inputs, ... }: let
+  # Mac 沉浸式窗口切换：SUPER+F
+  hypr-fullscreen = pkgs.writeShellScriptBin "hypr-fullscreen" ''
+    #!/usr/bin/env bash
+    if [ -n "$1" ]; then
+      WIN_ADDR="$1"
+    else
+      WIN_ADDR=$(hyprctl activewindow -j | jq -r '.address')
+    fi
+    [ -z "$WIN_ADDR" ] && exit 0
+    WS_ID=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .workspace.id')
+    IS_FULLSCREEN=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .fullscreen')
+    [ -z "$WS_ID" ] || [ "$WS_ID" = "null" ] && exit 0
+    if [ "$IS_FULLSCREEN" != "0" ]; then
+      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
+      sleep 0.15
+      hyprctl dispatch movetoworkspace 1 2>/dev/null
+      sleep 0.15
+      hyprctl dispatch fullscreen 2>/dev/null
+      sleep 0.1
+      hyprctl dispatch fullscreen 2>/dev/null
+    elif [ "$WS_ID" = "1" ]; then
+      EXISTING=$(hyprctl workspaces -j | jq -r '[.[] | .id] | sort | .[]')
+      MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
+      TARGET=""
+      for i in $(seq 2 $((MAX_WS + 1))); do
+        if ! echo "$EXISTING" | grep -qx "$i"; then
+          TARGET="$i"; break
+        fi
+      done
+      [ -z "$TARGET" ] && TARGET=$((MAX_WS + 1))
+      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
+      sleep 0.15
+      hyprctl dispatch movetoworkspace "$TARGET" 2>/dev/null
+      sleep 0.15
+      hyprctl dispatch fullscreen 1 2>/dev/null
+    fi
+  '';
+
+  # 后台监控：ws1内窗口自动浮动 + 路由非ws1窗口
+  hypr-float-ws1 = pkgs.writeShellScriptBin "hypr-float-ws1" ''
+    #!/usr/bin/env bash
+    LAST_CHECK=$(date +%s)
+    while true; do
+      NOW=$(date +%s)
+      if [ $((NOW - LAST_CHECK)) -ge 1 ]; then
+        LAST_CHECK=$NOW
+        DATA=$(hyprctl clients -j 2>/dev/null)
+        while IFS= read -r addr; do
+          [ -z "$addr" ] && continue
+          hyprctl dispatch focuswindow address:"$addr" 2>/dev/null
+          sleep 0.05
+          hyprctl dispatch movetoworkspace 1 2>/dev/null
+        done <<< "$(echo "$DATA" | jq -r '.[] | select(.workspace.id != 1 and .fullscreen == 0) | .address')"
+        while IFS= read -r addr; do
+          [ -z "$addr" ] && continue
+          hyprctl dispatch togglefloating address:"$addr" 2>/dev/null
+        done <<< "$(echo "$DATA" | jq -r '.[] | select(.workspace.id == 1 and .floating == false and .fullscreen == 0) | .address')"
+      fi
+      sleep 0.1
+    done
+  '';
+in {
+  home.username = "janlely";
+  home.homeDirectory = "/home/janlely";
   nixpkgs.config.allowUnfree = true;
   fonts.fontconfig.enable = true;
 
-
-  # 安装用户级软件包
   home.packages = with pkgs; [
     curl
     wget
     google-chrome
-    virt-manager          # 图形 virt-manager
-    vulkan-tools vulkan-loader mesa-demos   # 如果你玩游戏/测试图形
+    virt-manager
+    vulkan-tools vulkan-loader mesa-demos
     neovim htop ripgrep fd bat eza
     fnm
     qwen-code
@@ -48,39 +108,11 @@
     pkgs.pi-coding-agent
     nomacs
     tauon
-
-    (pkgs.writeShellScriptBin "hypr-fullscreen" ''
-      #!/usr/bin/env bash
-      # Mac 沉浸式窗口切换：
-      #   - Workspace 1（大本营）的浮动窗口 → 飞向空闲专注区并全屏
-      #   - 专注区的全屏窗口 → 退回 Workspace 1 并恢复浮动
-
-      WINDOW_INFO=$(hyprctl activewindow -j)
-      WS_ID=$(echo "$WINDOW_INFO" | jq -r '.workspace.id')
-      IS_FULLSCREEN=$(echo "$WINDOW_INFO" | jq '.fullscreen')
-
-      if [ "$WS_ID" = "1" ] || [ "$IS_FULLSCREEN" != "0" ]; then
-          # 在 workspace 1 或已全屏 → 飞向专注区
-          EXISTING=$(hyprctl workspaces -j | jq -r '[.[] | .id] | sort | .[]')
-          MAX_WS=$(hyprctl workspaces -j | jq 'map(.id) | max // 0')
-          TARGET_WS=""
-          for i in $(seq 2 $((MAX_WS + 1))); do
-              if ! echo "$EXISTING" | grep -qx "$i"; then
-                  TARGET_WS="$i"
-                  break
-              fi
-          done
-          [ -z "$TARGET_WS" ] && TARGET_WS=$((MAX_WS + 1))
-          hyprctl --batch "dispatch movetoworkspace $TARGET_WS; dispatch fullscreen 1"
-      else
-          # 在专注区 → 退回大本营 workspace 1
-          hyprctl --batch "dispatch movetoworkspace 1; dispatch fullscreen 0"
-      fi
-    '')
+    hypr-fullscreen
+    hypr-float-ws1
   ];
 
   services.syncthing.enable = true;
-
   programs.yazi.enable = true;
 
   programs.git = {
@@ -91,7 +123,6 @@
       core.editor = "nvim";
     };
   };
-
 
   programs.fish = {
     enable = true;
@@ -106,13 +137,11 @@
       if command -v fzf >/dev/null 2>&1
         eval (fzf --fish | string collect)
       end
-
       set -q fish_user_key_bindings; and eval (fish_user_key_bindings)
       set -gx PATH "$HOME/.local/bin" $PATH
     '';
   };
 
-  # 启用 Home Manager 的状态版本（类似 system.stateVersion）
   home.stateVersion = "26.05";
 
   home.sessionVariables = {
@@ -121,49 +150,42 @@
     GSK_RENDERER = "ngl";
   };
 
-
   home.pointerCursor = {
-    gtk.enable = true;        # 让 GTK 应用生效
-    x11.enable = true;        # 让 X11 / XWayland 生效
-    name = "Bibata-Modern-Ice";   # 光标主题名称
-    package = pkgs.bibata-cursors;    # 提供这个主题的包
-    size = 24;                        # 光标大小
+    gtk.enable = true;
+    x11.enable = true;
+    name = "Bibata-Modern-Ice";
+    package = pkgs.bibata-cursors;
+    size = 24;
   };
-
 
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "hyprlang";
 
     settings = {
-
-      autogenerated = 0; 
-
+      autogenerated = 0;
       "$mod" = "SUPER";
 
       exec-once = [
-	"fcitx5"
+        "fcitx5"
+        "${config.home.homeDirectory}/bin/hypr-float-ws1.sh"
       ];
 
       general = {
         layout = "master";
-	border_size = 2;
+        border_size = 2;
         resize_on_border = true;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
       };
 
-
       workspace = [
         "f[1], gapsout:0, gapsin:0"
       ];
 
-
-
       decoration = {
         rounding = 10;
       };
-
 
       bezier = [
         "easeOutQuint, 0.23, 1, 0.32, 1"
@@ -177,87 +199,66 @@
         "fade, 1, 6, easeOutQuint"
       ];
 
-      # 核心规则：新窗口默认进 workspace 1（大本营），且在该工作区保持浮动
-      windowrulev2 = [
-        #"workspace 1, silent"       # 所有新窗口默认丢进 Workspace 1
-        #"float, workspace:1"        # Workspace 1 内所有窗口保持浮动（非平铺）
-        #"size 1400 900, workspace:1"  # 新窗口在 Workspace 1 的初始大小
+      bind = [
+        ''SUPER, RETURN, exec, wezterm''
+        ''SUPER, C, killactive''
+        ''SUPER, M, layoutmsg, swapwithmaster''
+        ''SUPER, D, exec, rofi -show drun -show-icons''
+        ''SUPER, Tab, exec, rofi -show window -show-icons''
+        ''SUPER, A, exec, flameshot gui -p ~/Pictures/Screenshots''
+        ''SUPER, left, workspace, e-1''
+        ''SUPER, right, workspace, e+1''
+        ''SUPER, L, exec, hyprlock''
+        ''SUPER, mouse:272, movewindow''
+        ''SUPER, E, exec, rofimoji --selector wofi --action copy''
+        ''SUPER, F, exec, ${pkgs.lib.getExe hypr-fullscreen}''
+        ''SUPER, T, layoutmsg, togglesplit''
+        ''SUPER, 1, workspace, 1''
+        ''SUPER, 2, workspace, 2''
+        ''SUPER, 3, workspace, 3''
+        ''SUPER, 4, workspace, 4''
+        ''SUPER, 5, workspace, 5''
+        ''SUPER, 6, workspace, 6''
+        ''SUPER, 7, workspace, 7''
+        ''SUPER, 8, workspace, 8''
+        ''SUPER, 9, workspace, 9''
+        ''SUPER, 0, workspace, 0''
       ];
-      bind =
-        [
-          ''SUPER, RETURN, exec, wezterm''
-          ''SUPER, C, killactive''
-          ''SUPER, M, layoutmsg, swapwithmaster''
-          ''SUPER, D, exec, rofi -show drun -show-icons''
-          ''SUPER, Tab, exec, rofi -show window -show-icons''
-          ''SUPER, A, exec, flameshot gui -p ~/Pictures/Screenshots''
-	  ''SUPER, left,  workspace, e-1''
-	  ''SUPER, right,  workspace, e+1''
-	  ''SUPER, L, exec, hyprlock''
-	  ''SUPER, mouse:272, movewindow''
-	  ''SUPER, E, exec, rofimoji --selector wofi --action copy''
-	  ''SUPER, F, exec, hypr-fullscreen''
-	  ''SUPER, T, layoutmsg, togglesplit''
-	  ''SUPER, 1, workspace, 1''
-	  ''SUPER, 2, workspace, 2''
-	  ''SUPER, 3, workspace, 3''
-	  ''SUPER, 4, workspace, 4''
-	  ''SUPER, 5, workspace, 5''
-	  ''SUPER, 6, workspace, 6''
-	  ''SUPER, 7, workspace, 7''
-	  ''SUPER, 8, workspace, 8''
-	  ''SUPER, 9, workspace, 9''
-	  ''SUPER, 0, workspace, 0''
-        ];
     };
   };
 
   services.flameshot = {
     enable = true;
-    
-  
     settings = {
       General = {
-        # 关键选项：强制使用 grim-based Wayland adapter（推荐）
         useGrimAdapter = true;
-  
-        # 可选：禁用 grim 相关的警告（干净一点）
         disabledGrimWarning = true;
-  
-        # 其他常用设置（根据喜好调整）
         savePath = "/home/janlely/Pictures/Screenshots";
         saveAsFileExtension = "png";
-        uiColor = "#00ff00";           # 截图 UI 颜色
+        uiColor = "#00ff00";
         showHelp = true;
         copyPathAfterSave = true;
-        # showDesktopNotification = true;
       };
     };
   };
 
-  # 安装 hyprlock
   programs.hyprlock = {
     enable = true;
-
-    # 可选：声明式配置锁屏界面（推荐从简单开始）
     settings = {
       general = {
         disable_loading_bar = false;
-        grace = 300;           # 锁定后 5 分钟内输入密码无需再次解锁（单位：秒）
+        grace = 300;
         hide_cursor = false;
         no_fade_in = false;
       };
-
       background = [
         {
-          path = "screenshot";        # 使用当前屏幕截图作为背景（推荐）
-          # path = "~/Pictures/wallpaper/lock.jpg";  # 或者使用固定壁纸
+          path = "screenshot";
           blur_passes = 3;
           blur_size = 8;
           color = "rgba(0, 0, 0, 0.5)";
         }
       ];
-
       input-field = [
         {
           size = "300, 50";
@@ -276,7 +277,6 @@
           valign = "center";
         }
       ];
-
       label = [
         {
           text = "$TIME";
@@ -290,9 +290,6 @@
     };
   };
 
-
-
-  # wezterm
   programs.wezterm = {
     enable = true;
   };
@@ -302,29 +299,6 @@
     recursive = true;
   };
 
-  #systemd.user.services.wezterm-mux = {
-  #  Unit = {
-  #    Description = "WezTerm Multiplexer Server (Headless)";
-  #    Documentation = [ "https://wezfurlong.org" ];
-  #    # 确保在用户图形会话准备好后，或者基础系统启动后运行
-  #    After = [ "default.target" ];
-  #  };
-
-  #  Service = {
-  #    # 使用绝对路径运行纯后台的多路复用服务器，它完全不需要也不创建 GUI 窗口
-  #    ExecStart = "${pkgs.wezterm}/bin/wezterm-mux-server";
-  #    # 如果因为意外挂掉，自动重启
-  #    Restart = "on-failure";
-  #    RestartSec = "5s";
-  #  };
-
-  #  Install = {
-  #    # 随用户登录/开机自动启动
-  #    WantedBy = [ "default.target" ];
-  #  };
-  #};
-
-  # pi-coding-agent
   home.activation = {
     createPiDir = config.lib.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD mkdir -p $HOME/.pi/agent
