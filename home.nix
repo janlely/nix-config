@@ -3,39 +3,35 @@
   # Mac 沉浸式窗口切换：SUPER+F
   hypr-fullscreen = pkgs.writeShellScriptBin "hypr-fullscreen" ''
     #!/usr/bin/env bash
-    if [ -n "$1" ]; then
-      WIN_ADDR="$1"
-    else
-      WIN_ADDR=$(hyprctl activewindow -j | jq -r '.address')
-    fi
+    # 单次 hyprctl 获取所有信息，避免多进程开销
+    WIN_ADDR=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address')
     [ -z "$WIN_ADDR" ] || [ "$WIN_ADDR" = "null" ] && exit 0
-    WS_ID=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .workspace.id')
-    FS=$(hyprctl clients -j | jq -r --arg a "$WIN_ADDR" '.[] | select(.address==$a) | .fullscreen')
-    [ -z "$WS_ID" ] || [ "$WS_ID" = "null" ] && exit 0
 
-    # fs=1 表示真正全屏；fs=2 是浮动窗口默认 overfullscreen 状态，不算真全屏
-    # ws1 = 浮动窗口空间，其他 ws = 全屏空间
-    if [ "$WS_ID" = "1" ] && [ "$FS" = "1" ]; then
-      # 退出全屏：回到 ws1 并恢复浮动
-      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
-      hyprctl dispatch fullscreen 0 2>/dev/null
+    # 一次查询取 WS_ID + FS，不再重复调用 hyprctl
+    eval "$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
+      .[] | select(.address == $a) |
+      "WS_ID=\(.workspace.id)";
+      "FS=\(.fullscreen)"
+    ')
+    ""
+    )"
+    [ -z "$WS_ID" ] && exit 0
+
+    # FS=1 表示真正全屏，无论在哪 workspace 都退出全屏，回到 ws1
+    # FS≠1 表示普通/浮动窗口，找空 ws 进入全屏
+    if [ "$FS" = "1" ]; then
       hyprctl dispatch movetoworkspace 1 2>/dev/null
       hyprctl dispatch movetofloat 2>/dev/null
+      hyprctl dispatch fullscreen 0 2>/dev/null
     else
-      # 进入全屏：从 ws2 起找第一个空 workspace，没有则动态创建
-      hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
-      NEW_WS=""
-      for i in $(seq 2 100); do
-        # 检查 ws i 是否存在且为空（用 --arg 避免字符串/数字比较问题）
-        IS_EMPTY=$(hyprctl workspaces -j 2>/dev/null | jq -r --arg id "$i" '.[] | select(.id==$id and (.clients | length) == 0) | .id')
-        if [ -n "$IS_EMPTY" ]; then
-          NEW_WS="$i"
-          break
-        fi
-      done
-      # 如果没找到空 ws，创建一个新的
+      # 一次获取所有 workspace，在本地 jq 中查找第一个空 ws（跳过 ws1，ws1 只保留给浮动窗口）
+      WS_INFO=$(hyprctl workspaces -j 2>/dev/null)
+      eval "$(echo "$WS_INFO" | jq -r '
+        [ .[] | select((.id | tonumber) >= 2) | select((.clients // []) | length == 0) | .id ] as $empty |
+        (if ($empty | length) > 0 then "NEW_WS=\($empty[0])" else "NEW_WS=" end),
+        "MAX_WS=\([.[].id | tonumber] | max // 1)"
+      ')"
       if [ -z "$NEW_WS" ]; then
-        MAX_WS=$(hyprctl workspaces -j 2>/dev/null | jq -r '[.[].id | tonumber] | max // 1')
         NEW_WS=$((MAX_WS + 1))
         hyprctl dispatch createnewworkspace "$NEW_WS" 2>/dev/null
       fi
