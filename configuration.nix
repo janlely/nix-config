@@ -283,6 +283,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.cudaSupport = true;
 
 
   services.openssh.enable = true;
@@ -354,5 +355,6 @@
       "big_writes"
     ];
   };
+
 }
 

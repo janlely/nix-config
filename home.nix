@@ -26,14 +26,29 @@
 
     if [ "$FS" = "1" ] || [ "$FS" = "2" ]; then
       # EXIT：退出全屏，回 ws1
-      # 顺序关键：togglefloating → fullscreen 0 → movetoworkspace 1 → fullscreen 0
-      # 原因：windowrule float-ws1 会在 movetoworkspace 1 后自动设 fs=2，
-      #       所以最后再调一次 fullscreen 0 确保退出
-      hyprctl dispatch togglefloating 2>/dev/null
+      # 关键发现：
+      #   fullscreen 0 对 fs=1 会转到 fs=2(pseudo-fullscreen)，不直接到 fs=0
+      #   fullscreen 0 对 fs=0 会转到 fs=2（非幂等！）
+      #   fullscreen 0 对 fs=2 才会到 fs=0
+      #   float-ws1 规则在 fs=2 时不会触发恢复浮动
+      # 解法：先退出全屏→移回ws1→校验并修复 fs 和 floating 状态
       hyprctl dispatch fullscreen 0 2>/dev/null
       hyprctl dispatch movetoworkspace 1 2>/dev/null
-      sleep 0.2
-      hyprctl dispatch fullscreen 0 2>/dev/null
+      sleep 0.5
+      # 确保 fs=0（fs=2 时再调一次 fullscreen 0）
+      FS_NOW=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
+        .[] | select(.address == $a) | .fullscreen
+      ')
+      if [ "$FS_NOW" = "2" ]; then
+        hyprctl dispatch fullscreen 0 2>/dev/null
+      fi
+      # 确保 float=true（非浮动时补 togglefloating）
+      FLOAT_NOW=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
+        .[] | select(.address == $a) | .floating
+      ')
+      if [ "$FLOAT_NOW" = "false" ]; then
+        hyprctl dispatch togglefloating 2>/dev/null
+      fi
     else
       # ENTER：找空 ws（从 ws2 起），move 过去，设全屏
       # 如果已在 ws2+ 且 fs=0（非全屏），先移到空 ws 再设全屏
@@ -75,6 +90,7 @@ in {
     pkgs.stack pkgs.zellij
     pkgs.localsend pkgs.pi-coding-agent
     nomacs tauon hypr-fullscreen
+    pkgs.retroarch
   ];
   services.syncthing.enable = true;
   programs.yazi.enable = true;
