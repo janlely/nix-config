@@ -2,21 +2,43 @@
 tun:
   enable: true
   device: mihomo
-  stack: gvisor   # system / mixed / gvisor，mixed 平衡性好
+  stack: gvisor
   skip-proxy-interfaces:
     - br0
     - tailscale0
-  udp: false 
+  udp: false
   dns-hijack:
     - any:53
     - tcp://any:53
   auto-route: true
   auto-redirect: true
   auto-detect-interface: true
-  strict-route: true         # 防路由泄漏，强烈推荐
+  strict-route: true
   exclude-interface:
     - br0
     - vnet0
+    - tailscale0          # 新增：把 tailscale0 也排除
+  # 新增：排除 Tailscale 网段，避免被接管路由
+  route-exclude-address:
+    - 100.64.0.0/10       # Tailscale CGNAT 整个段
+#tun:
+#  enable: true
+#  device: mihomo
+#  stack: gvisor   # system / mixed / gvisor，mixed 平衡性好
+#  skip-proxy-interfaces:
+#    - br0
+#    - tailscale0
+#  udp: false 
+#  dns-hijack:
+#    - any:53
+#    - tcp://any:53
+#  auto-route: true
+#  auto-redirect: true
+#  auto-detect-interface: true
+#  strict-route: true         # 防路由泄漏，强烈推荐
+#  exclude-interface:
+#    - br0
+#    - vnet0
 
 # DNS 配置（防泄漏 + 分流）
 dns:

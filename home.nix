@@ -91,6 +91,7 @@ in {
     pkgs.localsend pkgs.pi-coding-agent
     nomacs tauon hypr-fullscreen
     pkgs.retroarch
+    pkgs.uv
   ];
   services.syncthing.enable = true;
   programs.yazi.enable = true;

@@ -264,7 +264,7 @@
   
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 53317 ];
+    allowedTCPPorts = [ 53317 2718 ];
   };
 
   nix.settings = {
