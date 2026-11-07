@@ -2,6 +2,12 @@
 { config, pkgs, inputs, ... }: let
   # Mac 沉浸式窗口切换：SUPER+F
   # ws1 存放浮动窗口，ws2+ 存放全屏窗口
+  # 启动器包装：先切到 ws1，再执行应用（让 workspace=1 的 floating 规则立即生效）
+  ws1-launcher = pkgs.writeShellScriptBin "ws1-launcher" ''
+    #!/usr/bin/env bash
+    hyprctl dispatch workspace 1 >/dev/null 2>&1
+    exec "$@"
+  '';
   hypr-fullscreen = pkgs.writeShellScriptBin "hypr-fullscreen" ''
     #!/usr/bin/env bash
     # 获取目标窗口地址（优先 activewindow，回退到 clients 列表）
@@ -89,7 +95,7 @@ in {
     pkgs.wechat pkgs.proxychains-ng
     pkgs.stack pkgs.zellij
     pkgs.localsend pkgs.pi-coding-agent
-    nomacs tauon hypr-fullscreen
+    nomacs tauon hypr-fullscreen ws1-launcher
     pkgs.retroarch
     pkgs.uv
   ];
@@ -148,7 +154,7 @@ in {
         ''SUPER, RETURN, exec, wezterm''
         ''SUPER, C, killactive''
         ''SUPER, M, layoutmsg, swapwithmaster''
-        ''SUPER, D, exec, rofi -show drun -show-icons''
+        ''SUPER, D, exec, ws1-launcher rofi -show drun -show-icons''
         ''SUPER, Tab, exec, rofi -show window -show-icons''
         ''SUPER, A, exec, flameshot gui -p ~/Pictures/Screenshots''
         ''SUPER, left, workspace, e-1''
@@ -167,6 +173,7 @@ in {
       # 自动浮动+半屏尺寸
       windowrule = [
         { name = "float-ws1"; float = true; workspace = 1; }
+        { name = "float-clashverge"; match.class = "clash-verge"; float = true; size = "1720 720"; }
         { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
         { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }

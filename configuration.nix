@@ -277,8 +277,8 @@
     #];
 
     #substituters = [
-      #"https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
-      #"https://cache.nixos.org?priority=100"                         # 官方放最后
+    #  "https://mirrors.cernet.edu.cn/nix-channels/store?priority=5"   # 加 priority 让它优先（数字越小优先越高）
+    #  "https://cache.nixos.org?priority=100"                         # 官方放最后
     #];
   };
 
@@ -317,30 +317,32 @@
     "net.ipv6.conf.default.disable_ipv6" = true;
   };
 
-  environment.etc."mihomo/config.yaml" = {
-    source = ./mihomo.yaml;
-    mode = "644";
-  };
+
+  #environment.etc."mihomo/config.yaml" = {
+  #  source = ./mihomo.yaml;
+  #  mode = "644";
+  #};
 
 
-  systemd.services.mihomo = {
-    description = "mihomo Clash Meta";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-  
-    serviceConfig = {
-      Type = "simple";
-      User = "root";
-      ExecStart = "${pkgs.mihomo}/bin/mihomo -f /etc/mihomo/config.yaml";
-      
-      AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
-      CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
-  
-      Restart = "always";
-      RestartSec = "3";
-      LimitNOFILE = 1048576;
-    };
-  };
+  #systemd.services.mihomo = {
+  #  description = "mihomo Clash Meta";
+  #  after = [ "network.target" ];
+  #  wantedBy = [ "multi-user.target" ];
+  #
+  #  serviceConfig = {
+  #    Type = "simple";
+  #    User = "root";
+  #    ExecStart = "${pkgs.mihomo}/bin/mihomo -f /etc/mihomo/config.yaml";
+  #    
+  #    AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
+  #    CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_NET_BIND_SERVICE" "CAP_SYS_ADMIN" "CAP_SYS_RESOURCE" ];
+  #
+  #    Restart = "always";
+  #    RestartSec = "3";
+  #    LimitNOFILE = 1048576;
+  #    # LimitNOFILE = 524288;
+  #  };
+  #};
 
 
   fileSystems."/mnt/my-passport" = {
@@ -354,6 +356,26 @@
       "umask=022" 
       "big_writes"
     ];
+  };
+
+
+  #programs.appimage = {
+  #  enable = true;
+  #  binfmt = true;   # 让系统内核能识别并自动用 appimage-run 执行 AppImage
+  #  package = pkgs.appimage-run.override {
+  #    extraPkgs = pkgs: with pkgs; [
+  #    	libepoxy
+  #    ];
+  #  };
+  #};
+
+  programs.clash-verge = {
+    enable = true;
+    package = pkgs.clash-verge-rev;   # 默认就是这个
+    serviceMode = true;               # 开启服务模式（TUN 推荐开）
+    tunMode = true;                   # 给 TUN 模式必要的权限
+    autoStart = true;                 # 可选：开机自启 GUI
+    # group = "wheel";                # 可选：限制服务 socket 权限的组
   };
 
 }
