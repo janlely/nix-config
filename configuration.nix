@@ -286,7 +286,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.cudaSupport = true;
+  #nixpkgs.config.cudaSupport = true;
 
 
   services.openssh.enable = true;
@@ -380,6 +380,28 @@
   };
 
   services.usbmuxd.enable = true;
+
+  systemd.services.cloudflared-tunnel = {
+    description = "Cloudflare Tunnel";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --no-autoupdate run --token eyJhIjoiMWVjZmRmYWMwNDE0MDA2ZTg2MjczMjk1YmQ4ZmMxZjIiLCJ0IjoiNDRjOGIwOWMtNDQ3NS00OTFiLThjZGYtODc3Y2EwMjZkYTk0IiwicyI6Ik1qQXpPVGd4WVRndFlqYzNOUzAwT1RrNExUaGtNemd0TWpNelptSmlZV1pqTnpNMSJ9";
+      # 或者使用凭据文件和配置文件启动：
+      # ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --no-autoupdate --config /etc/cloudflared/config.yml run";
+      Restart = "always";
+      RestartSec = "5s";
+      User = "cloudflared";
+      Group = "cloudflared";
+    };
+  };
+  
+  users.users.cloudflared = {
+    isSystemUser = true;
+    group = "cloudflared";
+  };
+  users.groups.cloudflared = {};
 
 
 }
