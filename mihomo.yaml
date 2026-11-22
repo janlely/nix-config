@@ -2,7 +2,7 @@
 tun:
   enable: true
   device: mihomo
-  stack: gvisor
+  stack: system 
   skip-proxy-interfaces:
     - br0
     - tailscale0
@@ -129,14 +129,14 @@ rules:
   - GEOSITE,private,直连,no-resolve
   - GEOSITE,CN,直连
   - GEOIP,CN,直连
+  - DOMAIN-SUFFIX,tailscale.com,直连
   - DOMAIN-SUFFIX,nvidia.com,PURE-OUT
   - DOMAIN-SUFFIX,chatgpt.com,PURE-OUT
   - DOMAIN-SUFFIX,claude.ai,PURE-OUT
   - DOMAIN-SUFFIX,claude.com,PURE-OUT
-  - DOMAIN-SUFFIX,google.com,PURE-OUT
+  # - DOMAIN-SUFFIX,google.com,PURE-OUT
   - DOMAIN-SUFFIX,grok.com,PURE-OUT
   - DOMAIN-SUFFIX,openai.com,PURE-OUT
-  - DOMAIN-SUFFIX,agnes-ai.com,PURE-OUT
-  - DOMAIN-SUFFIX,tailscale.com,直连
+  # - DOMAIN-SUFFIX,agnes-ai.com,PURE-OUT
   - MATCH,自动选择
 

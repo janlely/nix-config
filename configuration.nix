@@ -174,6 +174,8 @@
     yazi
     blueman
     pavucontrol
+    ifuse
+    libimobiledevice
   ];
 
   services.blueman.enable = true;
@@ -313,8 +315,8 @@
 
 
   boot.kernel.sysctl = {
-    "net.ipv6.conf.all.disable_ipv6" = true;   # 如果你不用 IPv6
-    "net.ipv6.conf.default.disable_ipv6" = true;
+    "net.ipv6.conf.all.disable_ipv6" = false;   # 如果你不用 IPv6
+    "net.ipv6.conf.default.disable_ipv6" = false;
   };
 
 
@@ -374,9 +376,9 @@
     package = pkgs.clash-verge-rev;   # 默认就是这个
     serviceMode = true;               # 开启服务模式（TUN 推荐开）
     tunMode = true;                   # 给 TUN 模式必要的权限
-    autoStart = true;                 # 可选：开机自启 GUI
-    # group = "wheel";                # 可选：限制服务 socket 权限的组
   };
+
+  services.usbmuxd.enable = true;
 
 }
 
