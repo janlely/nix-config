@@ -176,6 +176,7 @@
     pavucontrol
     ifuse
     libimobiledevice
+    pkgs.cloudflared
   ];
 
   services.blueman.enable = true;
@@ -379,6 +380,7 @@
   };
 
   services.usbmuxd.enable = true;
+
 
 }
 
