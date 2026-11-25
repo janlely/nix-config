@@ -98,7 +98,6 @@ in {
     nomacs tauon hypr-fullscreen ws1-launcher
     pkgs.retroarch
     pkgs.uv
-    pkgs.claude-code
   ];
   services.syncthing.enable = true;
   programs.yazi.enable = true;
