@@ -98,6 +98,7 @@ in {
     nomacs tauon hypr-fullscreen ws1-launcher
     pkgs.retroarch
     pkgs.uv
+    pkgs.claude-code
   ];
   services.syncthing.enable = true;
   programs.yazi.enable = true;
@@ -178,6 +179,8 @@ in {
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
         { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
         { name = "float-steam"; match.class = "steam"; float = true; size = "1720 720"; }
+        { name = "float-ghostty"; match.class = "com.mitchellh.ghostty"; float = true; size = "1720 720"; }
+        { name = "float-ccswitch"; match.class = "cc-switch"; float = true; size = "1720 720"; }
       ];
     };
   };

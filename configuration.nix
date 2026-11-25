@@ -177,6 +177,8 @@
     ifuse
     libimobiledevice
     pkgs.cloudflared
+    ghostty
+    tmux
   ];
 
   services.blueman.enable = true;
@@ -362,15 +364,15 @@
   };
 
 
-  #programs.appimage = {
-  #  enable = true;
-  #  binfmt = true;   # 让系统内核能识别并自动用 appimage-run 执行 AppImage
-  #  package = pkgs.appimage-run.override {
-  #    extraPkgs = pkgs: with pkgs; [
-  #    	libepoxy
-  #    ];
-  #  };
-  #};
+  programs.appimage = {
+    enable = true;
+    binfmt = true;   # 让系统内核能识别并自动用 appimage-run 执行 AppImage
+    #package = pkgs.appimage-run.override {
+    #  extraPkgs = pkgs: with pkgs; [
+    #  ];
+    #};
+  };
+
 
   programs.clash-verge = {
     enable = true;
