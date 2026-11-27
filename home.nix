@@ -10,45 +10,39 @@
   '';
   hypr-fullscreen = pkgs.writeShellScriptBin "hypr-fullscreen" ''
     #!/usr/bin/env bash
-    # 获取目标窗口地址（优先 activewindow，回退到 clients 列表）
+    # ws1 存放浮动窗口，ws2+ 存放全屏窗口
+    # SUPER+F：浮动窗口→找空ws全屏 / 全屏窗口→退出回ws1
     WIN_ADDR=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address')
     if [ -z "$WIN_ADDR" ] || [ "$WIN_ADDR" = "null" ]; then
       WIN_ADDR=$(hyprctl clients -j 2>/dev/null | jq -r '.[0].address')
     fi
     [ -z "$WIN_ADDR" ] || [ "$WIN_ADDR" = "null" ] && exit 0
 
-    # 聚焦目标窗口，确保状态准确
     hyprctl dispatch focuswindow address:"$WIN_ADDR" 2>/dev/null
     sleep 0.1
 
-    # 读取窗口状态
     WIN_INFO=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
-      .[] | select(.address == $a) |
-      "WS_ID=\(.workspace.id)\nFS=\(.fullscreen)"
+      .[] | select(.address == $a) | "FS=\(.fullscreen)"
     ')
     [ -z "$WIN_INFO" ] && exit 0
-    WS_ID=$(echo "$WIN_INFO" | head -1 | cut -d= -f2)
-    FS=$(echo "$WIN_INFO" | tail -1 | cut -d= -f2)
+    FS=$(echo "$WIN_INFO" | cut -d= -f2)
 
-    if [ "$FS" = "1" ] || [ "$FS" = "2" ]; then
-      # EXIT：退出全屏，回 ws1
-      # 关键发现：
-      #   fullscreen 0 对 fs=1 会转到 fs=2(pseudo-fullscreen)，不直接到 fs=0
-      #   fullscreen 0 对 fs=0 会转到 fs=2（非幂等！）
-      #   fullscreen 0 对 fs=2 才会到 fs=0
-      #   float-ws1 规则在 fs=2 时不会触发恢复浮动
-      # 解法：先退出全屏→移回ws1→校验并修复 fs 和 floating 状态
-      hyprctl dispatch fullscreen 0 2>/dev/null
-      hyprctl dispatch movetoworkspace 1 2>/dev/null
-      sleep 0.5
-      # 确保 fs=0（fs=2 时再调一次 fullscreen 0）
+    if [ "$FS" != "0" ]; then
+      # EXIT：退出全屏
+      hyprctl dispatch fullscreenstate 0 0 2>/dev/null
+      sleep 0.2
+      # 确认已退出（有时需要两次）
       FS_NOW=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
         .[] | select(.address == $a) | .fullscreen
       ')
-      if [ "$FS_NOW" = "2" ]; then
-        hyprctl dispatch fullscreen 0 2>/dev/null
+      if [ "$FS_NOW" != "0" ]; then
+        hyprctl dispatch fullscreenstate 0 0 2>/dev/null
+        sleep 0.2
       fi
-      # 确保 float=true（非浮动时补 togglefloating）
+      # 移回 ws1
+      hyprctl dispatch movetoworkspace 1 2>/dev/null
+      sleep 0.2
+      # 确保是浮动状态
       FLOAT_NOW=$(hyprctl clients -j 2>/dev/null | jq -r --arg a "$WIN_ADDR" '
         .[] | select(.address == $a) | .floating
       ')
@@ -56,21 +50,19 @@
         hyprctl dispatch togglefloating 2>/dev/null
       fi
     else
-      # ENTER：找空 ws（从 ws2 起），move 过去，设全屏
-      # 如果已在 ws2+ 且 fs=0（非全屏），先移到空 ws 再设全屏
+      # ENTER：找空 ws（从 ws2 起依次找第一个空闲的 workspace）
+      # Hyprland 只上报有窗口的 workspace（非 persistent），所以需要空隙检测：
+      # 从 ws2 开始，找到第一个不存在于 workspace 列表中的 id
+      # 使用 fullscreenstate 而不是 fullscreen，避免 0.55.4 的全屏全局污染 bug
       WS_INFO=$(hyprctl workspaces -j 2>/dev/null)
-      NEW_WS=$(echo "$WS_INFO" | jq -r '
-        [ .[] | select((.id | tonumber) >= 2) | select((.clients // []) | length == 0) | .id ] | if length > 0 then .[0] else empty end
-      ')
-      if [ -z "$NEW_WS" ]; then
-        MAX_WS=$(echo "$WS_INFO" | jq '[.[].id | tonumber] | max // 1')
-        NEW_WS=$((MAX_WS + 1))
-        # 用 movetoworkspace 创建新 ws（0.55.4 不支持 createnewworkspace）
-        hyprctl dispatch movetoworkspace "$NEW_WS" 2>/dev/null
-      fi
+      EXISTING_WS=$(echo "$WS_INFO" | jq '[.[].id | tonumber] | sort')
+      NEW_WS=2
+      while echo "$EXISTING_WS" | jq -e --argjson w "$NEW_WS" 'index($w)' > /dev/null 2>&1; do
+        NEW_WS=$((NEW_WS + 1))
+      done
       hyprctl dispatch movetoworkspace "$NEW_WS" 2>/dev/null
       sleep 0.3
-      hyprctl dispatch fullscreen 1 2>/dev/null
+      hyprctl dispatch fullscreenstate 2 2 2>/dev/null
     fi
   '';
 in {
@@ -98,6 +90,7 @@ in {
     nomacs tauon hypr-fullscreen ws1-launcher
     pkgs.retroarch
     pkgs.uv
+    unzip
   ];
   services.syncthing.enable = true;
   programs.yazi.enable = true;
@@ -172,7 +165,7 @@ in {
       bindm = [''SUPER, mouse:272, movewindow''];
       # 自动浮动+半屏尺寸
       windowrule = [
-        { name = "float-ws1"; float = true; workspace = 1; }
+        { name = "float-ws1"; float = true; workspace = 1; }  # 默认所有窗口浮动到 ws1
         { name = "float-clashverge"; match.class = "clash-verge"; float = true; size = "1720 720"; }
         { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
@@ -180,6 +173,8 @@ in {
         { name = "float-steam"; match.class = "steam"; float = true; size = "1720 720"; }
         { name = "float-ghostty"; match.class = "com.mitchellh.ghostty"; float = true; size = "1720 720"; }
         { name = "float-ccswitch"; match.class = "cc-switch"; float = true; size = "1720 720"; }
+        # flameshot: 浮动+不抢焦点+钉在所有workspace，防止截图时退出全屏
+        { name = "flameshot-overlay"; match.class = "flameshot"; float = true; no_initial_focus = true; pin = true; no_anim = true; }
       ];
     };
   };
@@ -203,6 +198,15 @@ in {
       $DRY_RUN_CMD mkdir -p $HOME/.pi/agent
       $DRY_RUN_CMD chmod 700 $HOME/.pi/agent
     '';
+  };
+
+  xdg.desktopEntries.my-app = {
+    name = "CC-Switch";
+    comment = "CC-Switch";
+    exec = "/home/janlely/cc-switch/CC-Switch-v4.0.40-Linux-x86_64.AppImage";
+    icon = "/home/janlely/cc-switch/icon.png"; # 可选
+    categories = [ "Utility" ];
+    terminal = false;
   };
 
 

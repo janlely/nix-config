@@ -12,7 +12,6 @@
 
     # 可选：NUR（社区包仓库）
     nur.url = "github:nix-community/NUR";
-    hyprland.url = "github:hyprwm/Hyprland";
 
   };
 
