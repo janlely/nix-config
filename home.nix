@@ -144,7 +144,7 @@ in {
         "fade, 1, 6, easeOutQuint"
       ];
       bind = [
-        ''SUPER, RETURN, exec, wezterm''
+        #''SUPER, RETURN, exec, wezterm''
         ''SUPER, C, killactive''
         ''SUPER, M, layoutmsg, swapwithmaster''
         ''SUPER, D, exec, ws1-launcher rofi -show drun -show-icons''
@@ -169,7 +169,7 @@ in {
         { name = "float-clashverge"; match.class = "clash-verge"; float = true; size = "1720 720"; }
         { name = "float-kitty"; match.class = "kitty"; float = true; size = "1720 720"; }
         { name = "float-chrome"; match.class = "google-chrome"; float = true; size = "1720 720"; }
-        { name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
+        #{ name = "float-wezterm"; match.class = "org.wezfurlong.wezterm"; float = true; size = "1720 720"; }
         { name = "float-steam"; match.class = "steam"; float = true; size = "1720 720"; }
         { name = "float-ghostty"; match.class = "com.mitchellh.ghostty"; float = true; size = "1720 720"; }
         { name = "float-ccswitch"; match.class = "cc-switch"; float = true; size = "1720 720"; }
@@ -191,8 +191,8 @@ in {
       label = [{ text = "$TIME"; color = "rgba(255, 255, 255, 0.9)"; font_size = 80; position = "0, 200"; halign = "center"; valign = "center"; }];
     };
   };
-  programs.wezterm = { enable = true; };
-  xdg.configFile."wezterm" = { source = ./wezterm-config; recursive = true; };
+  #programs.wezterm = { enable = true; };
+  #xdg.configFile."wezterm" = { source = ./wezterm-config; recursive = true; };
   home.activation = {
     createPiDir = config.lib.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD mkdir -p $HOME/.pi/agent
